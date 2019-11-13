@@ -15,7 +15,7 @@ setup(name='python-pype-lang-3',
         'Operating System :: OS Independent',
       ],
       keywords='functional programming map reduce filter lambda conditional',
-      url='https://github.com/bbbbdragon/python-pype-lang-3.git'
+      url='https://github.com/bbbbdragon/python-pype-lang-3.git',
       author='Bennett Charles Bullock',
       author_email='bennettbullock36@gmail.com',
       license='MIT',

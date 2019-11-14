@@ -22,6 +22,8 @@ setup(name='python-pype-lang-3',
       packages=find_packages(),
       install_requires=[
           'numpy',
+          'numba',
+          'colorama',
           'astpretty',
           'python-dateutil',
       ],

@@ -25,6 +25,11 @@ def date_range(begin,end):
     return rng
 
 
+def subtract_days(date,days=1):
+
+    return date-dt.timedelta(days=int(days))
+
+
 def add_days(date,days=1):
 
     return date+dt.timedelta(days=int(days))
@@ -289,6 +294,11 @@ def increment_date(date,days=1):
 def increment_date_string(dateString,days=1):
 
     return date_string(parse(dateString)+dt.timedelta(days=int(days)))
+
+
+def subtract_date_string(dateString,days=1):
+
+    return date_string(parse(dateString)-dt.timedelta(days=int(days)))
 
 
 def tomorrow():

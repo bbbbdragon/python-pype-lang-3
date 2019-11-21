@@ -921,3 +921,22 @@ def shuffle_ls(ls):
 def join_texts(ls,joiner=' '):
 
     return joiner.join(ls)
+
+
+def dct_merge_rec(dct1,dct2):
+
+    if not isinstance(dct1,dict) or not isinstance(dct2,dict):
+
+        return dct1
+        
+    for (k,v) in dct2.items():
+
+        if k in dct1:
+
+            dct1[k]=dct_merge_rec(dct1[k],v)
+
+        else:
+
+            dct1[k]=v
+
+    return dct1

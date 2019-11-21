@@ -42,12 +42,60 @@ def aggregate_by_first_column(m):
 
     indices=m[:,0].argsort()
     m[:,0]=m[indices,0]
-    m[:,1]=m[indices,1]
+    m[:,1:]=m[indices,1:]
     uniqueKeys=np.unique(m[:,0],return_counts=True)
     cumSum=np.cumsum(uniqueKeys[1])[:-1]
-    splitValues=np.split(m[:,1],cumSum)
+    splitValues=np.split(m[:,1:],cumSum)
 
     return splitValues,uniqueKeys[0],uniqueKeys[1]
+
+
+@njit
+def vectors_to_column_matrix(vecs,m):
+
+    for (i,vec) in enumerate(vecs):
+
+        m[:vec.shape[0],i]=vec
+
+    return m
+
+
+@njit
+def sizes(vecs,s):
+
+    for (i,vec) in enumerate(vecs):
+
+        s[i]=vec.shape[0]
+
+    return s
+
+
+def np_tile_cols(vec,numCols):
+
+    return np.tile(vec,(numCols,1)).T
+
+
+def np_tile_rows(vec,numCols):
+
+    return np.tile(vec,(numCols,1))
+
+
+
+def np_zero_array(rows):
+
+    return np.zeros([rows])
+
+
+def np_zeros(rows,cols):
+
+    return np.zeros([rows,cols])
+
+
+def square_zeros(ln):
+
+    return np.zeros([ln,ln])
+
+
 
 
 def aggregate_by_key(m,padVal=0,pad=True):
@@ -335,18 +383,52 @@ def unique_indices(array):
     return [(array == i).nonzero()[0][0] for i in np.unique(array)]
 
 
-def sort_by_row(array):
+def sort_by_row(array,offset=0,reverse=False):
 
-    array.sort(axis=1)
+    firstColumnsSlice=array[:,:offset]
+
+    array[:,offset:].sort(axis=1)
+
+    if reverse:
+
+        lastColumnsSlice=array[:,-offset:]
+        array=array[:,::-1]
+
+        array[:,:offset]=firstColumnsSlice
+        array[:,-offset:]=lastColumnsSlice
+
+        return array
 
     return array
 
+
+def sort_array(array,reverse=False):
+
+    if reverse:
+
+        array[::-1].sort()
+
+        return array
+
+    array[::-1].sort()
+
+    return array
+
+
+def sort_matrix_by_colum(m,colNum):
+
+    return m[m[:,colNum].argsort()]
 
 def unique_counts(array):
 
     uniqueElements,counts=np.unique(array,return_counts=True)
 
     return counts
+
+
+def unique_elements_and_counts(array):
+
+    return np.unique(array,return_counts=True)
 
 
 def unique_row_counts(array,padVal=0,pad=True):
@@ -372,13 +454,6 @@ def unique_sorted_counts(array):
     return unique_counts(array)
 
 
-def sort_array(array):
-
-    array.sort()
-
-    return array
-
-
 def from_mat(mat,i,j):
     '''
     Placeholder for when we can fix the indexing with numpy arrays.
@@ -394,6 +469,7 @@ def prob_vec(a):
               _/np.sum)
 
 
+'''
 @pypeify()
 def count_prob_array(ls,discount=0):
 
@@ -403,7 +479,7 @@ def count_prob_array(ls,discount=0):
               _-discount,
               _+L,
               _/np.sum)
-
+'''
 
 from pype3 import _0
 
@@ -430,9 +506,22 @@ def weighted_count_prob_diag(ls=[[1,0.5],[2,0.3]],
      np.diag)
 
 
-def count_prob_diag(ls,discount=0):
+def count_prob_diag(ls,length):
 
-    return np.diag(count_prob_array(ls,discount))
+    print('calling count prob') 
+
+    a=np.array([[i,1] for i in ls])
+    agg=aggregate_by_key(a)
+    keys=agg[1]
+    counts=agg[2]
+    c=np.zeros([length])
+    
+    for i in range(keys.shape[0]):
+
+        c[keys[i]]=counts[i]
+
+    return np.diag(c)
+
 
 
 def row_median(m,pad=False):
@@ -568,6 +657,171 @@ def np_set(a,i,v):
     return a
 
 
+def np_col_set(m,a,colNum):
+
+    m[:,colNum]=a
+
+    return m
+
 def row_min(a):
 
     return np.min(a,axis=1)
+
+
+def string_to_array(st,ln,pad=-1):
+
+    m=np.full([ln],pad)
+    s=np.array([st]).view('int32')[:ln]
+    m[:s.shape[0]]=s
+
+    return m
+
+
+@njit
+def bernstein_hash(stArray,a):
+
+    # print(f'{stArray} is stArray')
+
+    h=5831
+    arrayIndex=0
+
+    for c in stArray:
+
+        if c != 32:
+
+            h=((h << 5) + h) + c
+            
+            # print(f'{h} is h')
+            
+        else:
+
+            a[arrayIndex]=h
+            arrayIndex+=1
+            h=5831
+
+    a[arrayIndex]=h
+
+    return a[:arrayIndex+1]
+
+
+@njit
+def bernstein_hash_mat(m,m2,offset=1,pad=-1):
+
+    numRows=m.shape[0]
+    numColumns=m.shape[1]-offset
+
+    for i in range(numRows):
+
+        h=5831
+        arrayIndex=offset
+
+        for j in range(offset,numColumns):
+
+            c=m[i,j]
+
+            if c == pad or j == numColumns-1:
+
+                m2[i,arrayIndex]=h
+
+                break
+
+            elif c != 32:
+
+                h=((h << 5) + h) + c
+
+            else:
+
+                m2[i,arrayIndex]=np.abs(h)
+                arrayIndex+=1
+                h=5831
+
+    return m2
+
+
+@njit
+def fast_aggregate(m,m2,pad=-1,offset=1):
+
+    numRows=m.shape[0]
+    numCols=m.shape[1]
+    currentCatIndex=0
+    lastCat=m[0,0]
+
+    for i in range(numRows):
+
+        currentCat=m[i,0]
+
+        if currentCat != lastCat:
+
+            currentCatIndex+=1
+
+        lastCat=currentCat
+
+        for j in range(offset,numCols):
+
+            if m[i,j] == pad:
+
+                break
+
+            m2[currentCatIndex,j]=m[i,j]
+
+    return m2[:currentCatIndex,:]
+
+        
+def set_column_row(m,a,index):
+
+    m[:,index]=a
+
+    return a
+
+
+def np_full_with_column(m,numCols=None,column=0,pad=-1):
+
+
+    if numCols is None:
+
+        m2=np.full(m.shape,pad)
+
+    else:
+
+        m2=np.full([m.shape[0],numCols],pad)
+
+    m2[:,column]=m[:,column]
+
+    return m2
+
+
+def np_max_len(rowList):
+
+    return np.max([r.shape[0] for r in rowList])
+
+
+def row_stack(rowList,m):
+
+    print(m.shape)
+
+    # for (i,r) in enumerate(rowList):
+
+        # m[i,:r.shape[0]]=r
+
+    return m
+
+
+@njit
+def col_stack(firstElements,secondElements,m,offset=1):
+
+    m[:,0]=firstElements
+    m[:,offset:]=secondElements
+
+    return m
+
+    
+
+def unique_col_counts(m,colIndex):
+
+    return np.unique(m[:,colIndex],return_counts=True)[1]
+
+
+
+def np_flatten(a):
+
+    return a.flatten()

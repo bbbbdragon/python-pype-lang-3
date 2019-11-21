@@ -17,7 +17,7 @@ MIRROR=Getter('_pype_mirror_')
 _=MIRROR
 __=MIRROR
 MIRROR_SET=set([MIRROR])
-_0,_1,_2,_3,_4=[LamTup((_,(i,))) for i in range(5)]
+_0,_1,_2,_3,_4,_5=[LamTup((_,(i,))) for i in range(6)]
 _last=(_,(-1,))
 
 INDEX_ARG_DICT={}

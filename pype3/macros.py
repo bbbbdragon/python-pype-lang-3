@@ -70,6 +70,11 @@ def m(fArg):
     return [merge,fArg]
 
 
+def mp(*fArgs):
+
+    return [merge,fArgs[0],ep(*fArgs[1:])]
+
+
 def d(*fArgs):
 
     return [dissoc,*fArgs]

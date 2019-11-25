@@ -1,5 +1,5 @@
 import numpy as np
-from pype3 import pypeify,p,_
+from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,tup,db,a,iff,d
 from pype3.helpers import zip_dct,dct_keys,dct_values
 from pype3 import ep
 from numba import njit,jit
@@ -325,13 +325,8 @@ def col_sum(array):
 def divide_by_row_sum(array):
 
     array=array.astype(np.float64)
-    array+=L
 
-    # print(f'{array} is array')
-    # print(f'{row_sum(array)} is row_sum')
-    # print(f'{(array.T/row_sum(array)).T} is divide by row_sum')
-
-    return (array.T/row_sum(array)).T
+    return (array.T/(row_sum(array)+L)).T
 
 
 def unique_in_order(a):
@@ -548,7 +543,7 @@ def softplus(x):
 
 
 
-@pypeify()
+'''
 def prob_dct(valDct):
 
     ( valDct,
@@ -558,7 +553,7 @@ def prob_dct(valDct):
           prob_vec,
        )),
     )  
-
+'''
 
 def median_std(a):
 
@@ -825,3 +820,5 @@ def unique_col_counts(m,colIndex):
 def np_flatten(a):
 
     return a.flatten()
+
+pypeify_namespace(globals())

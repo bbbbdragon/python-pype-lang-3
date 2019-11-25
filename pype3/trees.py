@@ -298,18 +298,10 @@ class PypeValReplacer(NodeVisitor):
     since PypeVals are delam-ed recursively, so v(v(v(1))) evaluates as 1, and
     v(NameBookmark("a")) evaluates as NameBookmark("a").
     '''
-    def visit_BinOp(self,node):
-
-        # print('in binop')
-        # print(f'node is {ast.dump(node)}')
-
-        leftNode=node.left
-        rightNode=node.right
+    def visit_compare_or_binop(self,node,leftNode,rightNode):
 
         if not (is_name_bookmark(leftNode) and is_name_bookmark(rightNode)):
         
-            # print(f'pype val replaced node is {ast.dump(node)}')
-
             newLeftNode=Call(func=Attribute(value=PYPE_VALS_NODE,
                                             attr='PypeVal',
                                             ctx=Load()),
@@ -319,10 +311,28 @@ class PypeValReplacer(NodeVisitor):
             node.decorator_list=[]
             node=fix_missing_locations(node)
 
-        #print(f'{ast.dump(node)} is node')
+        return node
+
+
+    def visit_Compare(self,node):
+
+        leftNode=node.left
+        rightNode=node.comparators[0]
+
+        node=self.visit_compare_or_binop(node,leftNode,rightNode)
+        
+        self.generic_visit(node)
+       
+ 
+    def visit_BinOp(self,node):
+
+        leftNode=node.left
+        rightNode=node.right
+
+        node=self.visit_compare_or_binop(node,leftNode,rightNode)
 
         self.generic_visit(node)
-
+       
 
 ######################
 # CALL NAME REPLACER #

@@ -940,3 +940,8 @@ def dct_merge_rec(dct1,dct2):
             dct1[k]=v
 
     return dct1
+
+
+def merge_dcts_rec(dctLs):
+
+    return reduce(lambda h,d: dct_merge_rec(h,d),dctLs,{})

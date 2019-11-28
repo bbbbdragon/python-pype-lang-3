@@ -502,6 +502,12 @@ def sort_by_keys(ls,*keys):
                   key=lambda js: [js[key] for key in keys])
 
 
+def sort_by_embedded_keys(ls,*keys):
+
+    return sorted(ls,
+                  key=lambda js: get_or_false(js,*keys))
+
+
 def sort_by_index(ls,index,rev=False):
 
     return sorted(ls,key=itemgetter(index), reverse=rev)
@@ -945,3 +951,5 @@ def dct_merge_rec(dct1,dct2):
 def merge_dcts_rec(dctLs):
 
     return reduce(lambda h,d: dct_merge_rec(h,d),dctLs,{})
+
+

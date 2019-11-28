@@ -530,11 +530,15 @@ def filter_array(m,threshold=0):
     '''
     This sets anything above the threshold to 1.
     '''
-    m=np.array(m)
+    # print(f'{m} is array')
 
-    np.place(m,m>threshold,1)
+    newM=np.array(m)
 
-    return m
+    np.place(newM,newM>threshold,1)
+
+    # print(f'{newM} is array after')
+
+    return newM
 
 
 def softplus(x):
@@ -820,5 +824,6 @@ def unique_col_counts(m,colIndex):
 def np_flatten(a):
 
     return a.flatten()
+
 
 pypeify_namespace(globals())

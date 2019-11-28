@@ -24,7 +24,7 @@ def is_container(x): return isinstance(x,Container)
 def is_float(x): return isinstance(x,float)
 def is_integer(x): return isinstance(x,int)
 def is_callable(x): return callable(x)
-def key(x): return tup[0]
-def val(x): return tup[1]
+def key(tup): return tup[0]
+def val(tup): return tup[1]
 slc=lambda ls,start,stop: ls[start:stop]
 

@@ -2,7 +2,7 @@ import datetime as dt
 from copy import deepcopy
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
-
+from pype3.mappings import *
 '''
 This is a bunch of time helpers to cache dates and allow for quicker datetime
 processing.  Documentation forthcoming.  
@@ -204,6 +204,11 @@ def raw_date_to_date_string(rawDate):
 def int_to_date_string(dateInt):
 
     return from_cache(dateInt,INT_TO_DATE_CACHE)
+
+
+def date_int_string_to_date_string(dateIntString):
+
+    return int_to_date_string(to_int(dateIntString))
 
 
 def date_string_to_weekday_int(dateString):

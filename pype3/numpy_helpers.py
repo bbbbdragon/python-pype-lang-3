@@ -1,6 +1,6 @@
 import numpy as np
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,tup,db,a,iff,d
-from pype3.helpers import zip_dct,dct_keys,dct_values
+from pype3.helpers import *
 from pype3 import ep
 from numba import njit,jit
 
@@ -303,8 +303,6 @@ def by_indices(a,tuples):
 
     return [a[tup] for tup in tuples]
 
-
-from pype.helpers import dct_values
 
 def array_from_vals(dct):
 

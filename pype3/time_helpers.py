@@ -10,7 +10,7 @@ processing.  Documentation forthcoming.
 BEGIN=dt.datetime(year=1970,month=1,day=1)
 END=dt.datetime(year=2030,month=1,day=1)
 DAY=dt.timedelta(days=1)
-
+    
 def date_range(begin,end):
 
     d=deepcopy(begin)
@@ -78,6 +78,11 @@ def date_int(date):
 def date_string(date):
     
     return date.strftime("%Y-%m-%d")
+
+
+def begin_this_month(date):
+
+    return dt.datetime(year=date.year,month=date.month,day=1)
 
 
 def begin_next_week(date):
@@ -270,6 +275,11 @@ def date_string_to_month_string(dateString):
     return from_cache(dateString,DATE_STRING_TO_MONTH_STRING_CACHE)
 
 
+def date_string_to_month_int(dateString):
+
+    return month_string_to_int(date_string_to_month_string(dateString))
+
+
 WEEKDAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
 def weekday_int_to_string(i):
@@ -317,3 +327,31 @@ def weekday_interval_date_strings(weekBeginDateString,interval):
     endDate=increment_date_string(weekBeginDateString,interval[1])
 
     return date_string_range(beginDate,endDate)
+
+
+def biweek(dateString):
+
+    date=date_string_to_date(dateString)
+
+    return int(date.day > 15)
+
+
+def week(date):
+
+    if isinstance(date,dt.datetime):
+
+        date=date.date()
+
+    beginMonthDate=begin_this_month(date)
+    
+    return (beginMonthDate.weekday() + date.day) % 6
+
+
+def date_string_to_week(dateString):
+
+    return week(date_string_to_date(dateString))
+
+
+
+    
+    

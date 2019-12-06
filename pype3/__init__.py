@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.8'
+__version__='3.0.9'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *
@@ -188,7 +188,6 @@ def pypeify(verbose=False,
         '''
         aliases=aliases_for_pype(glbls)
 
-        # print(f'{pype_func} is pype func')
         # print(f'{aliases} is aliases')
 
         @wraps(pype_func)
@@ -336,10 +335,12 @@ def pypeify(verbose=False,
             '''
             We put it in the FUNCTION_CACHE. This is called by originalFuncName.
             '''
+
             FUNCTION_CACHE[originalFuncName]=recompiled_pype_func
             '''
             And we return the first evaluation of that function.
             '''
+
             return FUNCTION_CACHE[originalFuncName](*args)
 
         return build_wrapper
@@ -354,7 +355,8 @@ pype_builder=pypeify
 # COMPILATION OF ALL PYPE FUNCTIONS #
 #####################################
 
-def pypeify_namespace(namespace):
+def pypeify_namespace(namespace,
+                      functionCache=FUNCTION_CACHE):
     '''
     This function searches a namespace for any pype functions which do not have the
     'pype' decorator.  If the function does not have the 'pype' decorator, then the 
@@ -402,8 +404,6 @@ def pypeify_namespace(namespace):
     aliases=aliases_for_pype(namespace)
     allPypeFunctions={k:v for (k,v) in namespace.items() \
                       if is_pype_function(v,aliases)}
-
-    # pp.pprint(allPypeFunctions)
 
     for (k,v) in allPypeFunctions.items():
         

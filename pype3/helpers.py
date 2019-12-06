@@ -178,9 +178,14 @@ def dct_intersect(dct,keys):
     return {k:dct[k] for k in keys if k in dct}
 
  
-def dct_assoc(dct,key,val):
+def dct_assoc(dct,*keyVals):
 
-    dct[key]=val
+    keys=keyVals[::2]
+    vals=keyVals[1::2]
+
+    for (key,val) in zip(keys,vals):
+
+        dct[key]=val
 
     return dct
 
@@ -953,3 +958,12 @@ def merge_dcts_rec(dctLs):
     return reduce(lambda h,d: dct_merge_rec(h,d),dctLs,{})
 
 
+
+def camelize(st):
+
+    words=[w for w in st.split(' ') if w.isalnum()]
+    st=''.join([w.capitalize() for w in words])
+    st=st[0].lower()+st[1:]
+
+    return st
+    

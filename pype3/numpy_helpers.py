@@ -824,4 +824,9 @@ def np_flatten(a):
     return a.flatten()
 
 
+def diag_inv(a):
+
+    return np.nan_to_num(1/a,posinf=0.,nan=0.,neginf=0.)
+
+
 pypeify_namespace(globals())

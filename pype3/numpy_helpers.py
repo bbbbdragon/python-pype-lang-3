@@ -829,4 +829,34 @@ def diag_inv(a):
     return np.nan_to_num(1/a,posinf=0.,nan=0.,neginf=0.)
 
 
+def np_round(x):
+
+    return np.int(np.round(x))
+
+
+@njit
+def njit_median(a):
+
+    ln=a.shape[0]
+
+    if ln == 0:
+
+        return 0
+
+    if ln == 1:
+
+        return a[0]
+
+    mid=int(ln/2)
+
+    if ln % 2 == 0:
+
+        return a[mid]
+
+    val1=a[mid]
+    val2=a[mid+1]
+
+    return (val1+val2)/2
+
+    
 pypeify_namespace(globals())

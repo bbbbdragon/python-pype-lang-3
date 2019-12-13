@@ -762,6 +762,13 @@ def set_union(set1,set2):
     return set1|set2
 
 
+def set_update(set1,ls):
+
+    set1.update(ls)
+
+    return set1
+
+
 def set_diff(set1,set2):
 
     return set1-set2
@@ -967,3 +974,25 @@ def camelize(st):
 
     return st
     
+
+def add_set(el,st=set()):
+
+    st.add(el)
+
+    return st
+
+
+
+def clear_empties(obj):
+
+    if is_list(obj):
+
+       return [clear_empties(el) for el in obj if bool(el)]
+
+    if is_dict(obj):
+
+        d={k:clear_empties(v) for (k,v) in obj.items() if bool(v)}
+
+        return {k:v for (k,v) in obj.items() if bool(v)}
+
+    return obj

@@ -17,7 +17,7 @@ MIRROR=Getter('_pype_mirror_')
 _=MIRROR
 __=MIRROR
 MIRROR_SET=set([MIRROR])
-_0,_1,_2,_3,_4,_5=[LamTup((_,(i,))) for i in range(6)]
+_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10=[LamTup((_,(i,))) for i in range(11)]
 _last=(_,(-1,))
 
 INDEX_ARG_DICT={}
@@ -119,9 +119,9 @@ def is_map(fArg):
 
 def is_reduce(fArg):
 
-    #print('*'*30)
-    #print('is_reduce')
-    #print('{} is fArg'.format(fArg))
+    # print('*'*30)
+    # print('is_reduce')
+    # print('{} is fArg'.format(fArg))
     #print('is list fArg {}'.format(is_list(fArg)))
     #print('len {}'.format(len(fArg) == 1 or len(fArg) == 2))
     #print('is tuple {}'.format(is_tuple(fArg[0])))
@@ -172,6 +172,10 @@ def is_filter(fArg):
     # First, we want to see if it's a singleton set.
 
     if not is_set(fArg):
+
+        return False
+
+    if len(fArg) == 0:
 
         return False
 

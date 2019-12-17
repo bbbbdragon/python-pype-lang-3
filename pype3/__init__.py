@@ -143,7 +143,8 @@ def pypeify(verbose=False,
             printAccums=False,
             keyStep=False,
             buildKeyStep=False,
-            njitOptimized=False):
+            njitOptimized=False,
+            hardIndexing=False):
     '''
     TODO: Recursive Functions can't be compiled with explicit build.
     '''
@@ -290,7 +291,11 @@ def pypeify(verbose=False,
             Embedding nodes are determined by the keyword arguments, usually they're
             a wrapper that prints something and then returns the value.  
             '''
-            fArgTrees=optimize_f_args(fArgs,accumNode,embeddingNodes)
+
+            optimizeParams={'startNode':accumNode,
+                            'embeddingNodes':embeddingNodes,
+                            'hardIndexing':hardIndexing}
+            fArgTrees=optimize_f_args(fArgs,optimizeParams)
 
             print_obj(fArgTrees,'printing fArg trees',verbose)
 

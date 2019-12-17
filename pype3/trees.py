@@ -272,7 +272,7 @@ class NameReplacer(NodeTransformer):
             newNode=Call(func=Attribute(value=PYPE_VALS_NODE,
                                         attr='NameBookmark',
                                         ctx=Load()),
-                         args=[Str(s=name)], 
+                         args=[Str(s=name),node], 
                          keywords=[])
             
             #newNode=fix_missing_locations(newNode)

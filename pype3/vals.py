@@ -283,19 +283,30 @@ class NameBookmark(PypeVal):
     When the compiler sees NameBookmark(x), it generates a node Name(id='x'), which
     refers to the in-scope variable.  
     '''
-    def __init__(self,name):
+    def __init__(self,name,fArgVal):
 
         self.name=name
-        
-
-    def val(self):
-
-        return NameBookmark(self.name)
+        self.fArgVal=fArgVal
 
 
+    def get_f_arg_val(self):
+
+        return self.fArgVal
+
+
+    def get_name(self):
+
+        return self.name
+
+ 
     def __repr__(self):
 
-        return f"NameBookmark('{self.name}')"
+        return f"NameBookmark(name='{self.get_name()}',fArgVal='{self.get_f_arg_val()}')"
+
+
+    def __str__(self):
+
+        return self.__repr__()
 
 
 #########

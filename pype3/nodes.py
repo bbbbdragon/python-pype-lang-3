@@ -22,13 +22,18 @@ import astpretty
 from inspect import currentframe
 import types
 import builtins
+from operator import getitem
+
 '''
 This module contains the fArg-to-AST-node transformations.  It also contains
 optimize_rec and optimize_f_args, which run these transformations on fArgs.
 '''
+
+
 #############
 # CONSTANTS #
 #############
+
 
 NUMPY_UFUNCS=set(dir(np))
 OPERATOR_FUNCS=set(dir(_operator))
@@ -97,7 +102,7 @@ KEYSTEP_NODE=Attribute(value=PYPE_HELPERS_NODE,
 # HELPERS #
 ###########
 
-def pype_call_node(args):
+def pype_call_node(args,**params):
 
     return Call(func=PYPE_FUNC,
                 args=args,
@@ -158,7 +163,7 @@ def print_and_eval_node(tree,fArg):
                 keywords=[])
 
 
-def keystep_node(tree,fArg):
+def keystep_node(tree,fArg,**params):
 
     try:
 
@@ -175,25 +180,18 @@ def keystep_node(tree,fArg):
                 keywords=[])
 
 
-
-
 ##########
 # MIRROR #
 ##########
 
-def mirror_node(fArgs,accum=ACCUM_LOAD):
+def mirror_node(fArgs,params):
+    
     # print('mirror_node')
     # print(f'{fArgs} is fArgs')
     # print(f'{accum} is accum')
 
-    return accum
+    return params['accum']
 
-
-############
-# CALLABLE #
-############
-
-import importlib
 
 def module_attribute(moduleStrings):
 
@@ -228,7 +226,7 @@ def find_type(name):
     return ''
 
 
-def function_node(fArg,accum=ACCUM_LOAD):
+def function_node(fArg,params):
 
     #print('>'*30)
     #print('function_node')
@@ -290,7 +288,8 @@ def function_node(fArg,accum=ACCUM_LOAD):
     
     return None
 
-def callable_node_with_args(fArg,callableArgs):
+
+def callable_node_with_args(fArg,callableArgs,params):
 
     #print('='*30)
     #print('callable node with args')
@@ -308,7 +307,7 @@ def callable_node_with_args(fArg,callableArgs):
 
     if hasattr(fArg,'__name__'):
 
-        fArg=function_node(fArg)
+        fArg=function_node(fArg,params)
 
     return Call(func=fArg,
                 keywords=[],
@@ -316,92 +315,16 @@ def callable_node_with_args(fArg,callableArgs):
 
                           
 
-def callable_node(fArg,accumLoad=ACCUM_LOAD):
+def callable_node(fArg,params):
 
-    return callable_node_with_args(fArg,[accumLoad])
-
-
-
-#############
-# INDEX ARG #
-#############
-
-def index_arg_node(fArg,accum=ACCUM_LOAD):
-
-    return Subscript(value=accum,
-                     slice=Index(value=Num(n=INDEX_ARG_DICT[fArg])),
-                     ctx=Load())
+    return callable_node_with_args(fArg,[params['accum']],params)
 
 
 #########
 # INDEX #
 #########
 
-from operator import getitem
-
-def has_getitem(fArgs):
-
-    #print(f'is_getter(fArgs[0]) is {is_getter(fArgs[0])}')
-
-    if not fArgs:
-
-        return False
-
-    if is_callable(fArgs) and fArgs == getitem:
-
-        return True
-
-    if (is_list(fArgs) or is_tuple(fArgs)) and len(fArgs) > 1:
-
-        return has_getitem(fArgs[0])
-
-    if is_getter(fArgs):
-
-        #print(f'{fArgs} is getter')
-
-        return True
-
-    return False
-
-
-#########
-# SLICE #
-#########
-
-
-def slice_node(fArg,accum):
-
-    # print(f'computing slice for {fArg}')
-
-    lower=optimize_rec(fArg[1],accum)
-    upper=optimize_rec(fArg[2],accum)
-
-    # print(f'{lower} is lower')
-    # print(f'{upper} is upper')
-    # print(f'{upper is None} is upper is None')
-
-    return Call(func=Name(id='slice',
-                          ctx=Load()),
-                args=[lower,upper,NONE_NODE],
-                keywords=[])
-
-
-#########
-# INDEX #
-#########
-
-# Don't quite understand what this is - Index should be (fArg1,[fArg2]) 
-# or (index,[fArg])
-'''
-def is_index(fArg):
-
-    return pyp.is_index(fArg) \
-        or (is_tuple(fArg) \
-        and len(fArg) == 3 \
-        and has_getitem(fArg))
-'''
-
-def index_val_node(val):
+def index_val_node(val,params):
 
     if isinstance(val,int):
 
@@ -419,18 +342,15 @@ def index_val_node(val):
 
     return val
 
-    '''
-    return Subscript(value=chain_indices(indexedObject,indices[1:]),
-                     slice=Index(value=val),
-                     ctx=Load())
-    '''
 
+DEFAULT_INDEX_PARAMS={'accum':ACCUM_LOAD,
+                      'getFunc':get_call_or_false}
 
-def index_node(fArgs,accum=ACCUM_LOAD,getFunc=get_call_or_false):
+def soft_index_node(fArgs,params=DEFAULT_INDEX_PARAMS):
 
-    # print('='*30)
-    # print('index_node')
-    # print(f'computing index node {fArgs}')
+    accum=params['accum']
+    getFunc=params['getFunc'] if 'getFunc' in params else get_call_or_false
+
     indexedObject=fArgs[0]
     indices=[f[0] for f in fArgs[1:]]
 
@@ -439,534 +359,24 @@ def index_node(fArgs,accum=ACCUM_LOAD,getFunc=get_call_or_false):
         indexedObject=fArgs[1]
         indices=fArgs[2:]
     
-    # print(f'{indexedObject} is indexedObject')
-    # print(f'{dump(accum)} is accum')
-    optimizedIndexedObject=optimize_rec(indexedObject,accum) # Should just be a mirror
-    optimizedIndices=[optimize_rec(i,accum) if is_f_arg_for_node(i) \
+    optimizedIndexedObject=optimize_rec(indexedObject,params) 
+    optimizedIndices=[optimize_rec(i,params) if is_f_arg_for_node(i) \
                       else i for i in indices]
-    optimizedIndicesNodes=[index_val_node(index) for index in optimizedIndices]
-
-    # Actually, since the slice is now a Call, we don't need this, so let's try
-    # commenting it out.
-    '''
-    if optimizedIndicesNodes \
-       and isinstance(optimizedIndicesNodes[0],Slice):
-
-        # You need to make this more general - the syntax for indexing and slicing
-        # is not coherent.
-
-        return Subscript(value=optimizedIndexedObject,
-                         slice=optimizedIndicesNodes[0],
-                         ctx=Load())
-    '''
-
-    # print('callable_node_with_args')
-    # print(f'{[dump(n) for n in optimizedIndicesNodes]} is optimizedIndicesNodes')
-    # print(f'{dump(optimizedIndexedObject)} is optimizedIndexedObject')
+    optimizedIndicesNodes=[index_val_node(index,params) \
+                           for index in optimizedIndices]
 
     return callable_node_with_args(getFunc,
-                                   [optimizedIndexedObject]+optimizedIndicesNodes)
+                                   [optimizedIndexedObject]+optimizedIndicesNodes,
+                                   params)
 
 
-def lambda_index_node(fArgs,accum=ACCUM_LOAD):
+def index_node(fArgs,params=DEFAULT_INDEX_PARAMS):
 
-    return index_node(fArgs,accum,get_or_false)
+    if 'hardIndexing' in params and params['hardIndexing']:
 
-    
-##########
-# LAMBDA #
-##########
+        return soft_index_node(fArgs,params)
 
-import ast
-
-
-def lambda_node(fArgs,accum=ACCUM_LOAD):
-    # First element of lambda must be callable.  Replace with real fArg when you can.
-    # print('*'*30)
-    # print('lambda_node')
-    # print(f'{fArgs} is fArgs')
-    # print(f'{ast.dump(accum)} is accum')
-
-    callableFArg=optimize_rec(fArgs[0],
-                              accumNode=accum,
-                              optimizePairs=LAMBDA_OPTIMIZE_PAIRS)
-
-    # print(f'{ast.dump(callableFArg)} is callableFArg')
-
-    # This has just an "accum" as an args list.  So we need to see if there are
-    # other args.
-
-    optimizedLambdaArgs=[optimize_rec(fArg,accum) for fArg in fArgs[1:]]
-    #print(f'{dump(callableFArg)} is callableFArg in lambda node')
-    #print(f'{[dump(n) for n in optimizedLambdaArgs]} is optimizedLambdaArgs')
-    return callable_node_with_args(callableFArg,optimizedLambdaArgs)
-
-
-
-##############################
-# HELPERS FOR MAP AND FILTER #
-##############################
-
-
-def dict_comp(accum,
-              mapValue,
-              ifsList=[],
-              loadedDictKey=LOADED_DICT_KEY,
-              storedDictKey=STORED_DICT_KEY,
-              storedDictValue=STORED_DICT_VALUE,
-             ):
-
-    if not is_list(ifsList):
-
-        ifsList=[ifsList]
-
-    return DictComp(key=loadedDictKey,
-                    value=mapValue,
-                    generators=[
-                        comprehension(target=Tuple(elts=[storedDictKey,
-                                                         storedDictValue],
-                                                   ctx=Store()),
-                                      iter=Call(func=Attribute(value=accum,
-                                                               attr='items',
-                                                               ctx=Load()),
-                                                args=[],
-                                                keywords=[]),
-                                      is_async=False,
-                                      ifs=ifsList)])
-
-
-
-def list_comp( accum,
-               loadedListElement,
-               storedListElement,
-               ifsList=[]
-             ):
-
-    if not is_list(ifsList):
-
-        ifsList=[ifsList]
-
-    return ListComp(elt=loadedListElement,
-                    generators=[comprehension(target=storedListElement,
-                                              iter=accum,
-                                              is_async=False,
-                                              ifs=ifsList)])
-
-
-#######
-# MAP #
-#######
-
-def map_list_node(fArg,
-                  accum=ACCUM_LOAD,
-                  loadedListElement=LOADED_LIST_ELEMENT,
-                  storedListElement=STORED_LIST_ELEMENT):
-
-    #print('is map_list_node')
-
-    if len(fArg) > 1:
-
-        raise Exception(f'Multiple fArgs in maps deprecated.'
-                        'Use separate maps instead, like [add1],[add2] ...')
-
-    mapFArg=fArg[0]
-
-    mapNode=optimize_rec(mapFArg,loadedListElement)
-    lsComp=list_comp(accum,mapNode,storedListElement)
-
-    #print(f'{mapNode} is mapNode')
-    #print(f'{ast.dump(lsComp)} is lsComp')
-    
-    return lsComp
-
-
-def map_dict_node(fArg,
-                  accum=ACCUM_LOAD,
-                  loadedDictValue=LOADED_DICT_VALUE):
-
-    if len(fArg) > 1:
-
-        raise Exception(f'Multiple fArgs in maps deprecated.'  
-                        'Use separate maps instead.')
-
-    mapFArg=fArg[0]
-    mapValue=optimize_rec(mapFArg,loadedDictValue)
-
-    return dict_comp(accum,mapValue)
-
-
-
-def if_list_or_dict(accum,fArg,dict_func,list_func):
-
-
-    return IfExp(test=Call(func=IS_DICT_NODE,
-                           args=[accum],
-                           keywords=[]),
-                 body=dict_func(fArg,accum),
-                 orelse=list_func(fArg,accum))
-           
-
-def map_dict_or_list_node(fArg,accum=ACCUM_LOAD):
-
-    if len(fArg) > 1:
-
-        raise Exception(f'Multiple fArgs in maps deprecated.'  
-                        'Use separate maps instead.')
-    
-    return if_list_or_dict(accum,fArg,map_dict_node,map_list_node)
-
-
-###############
-# REDUCE NODE #
-###############
-
-def reduce_node(fArgs,accumNode=ACCUM_LOAD):
-    
-    callableNode=optimize_rec(fArgs[0][0],optimizePairs=LAMBDA_OPTIMIZE_PAIRS)
-
-    if len(fArgs) == 2:
-
-        iterableNode=optimize_rec(fArgs[1],accumNode)
-
-        return callable_node_with_args(reduce_func,
-                                       [callableNode,iterableNode])
-
-    if len(fArgs) == 3:
-
-        startValNode=optimize_rec(fArgs[1],accumNode)
-        iterableNode=optimize_rec(fArgs[2],accumNode)
-
-        return callable_node_with_args(reduce_func_start_val,
-                                       [callableNode,startValNode,iterableNode])
-
-    else:
-
-        raise Exception(f'Badly formed reduce fArg {fArg}')
-
-    return callable_node_with_args(reduce_func,
-                                   [callableNode,startValNode,iterableNode])
-
-
-##########
-# FILTER #
-##########
-
-def any_node(nodes):
-
-    if len(nodes) < 2:
-
-        return nodes
-
-    return BoolOp(op=Or(),
-                  values=nodes)
-
-
-def filter_list_node(fArgs,
-                     accum=ACCUM_LOAD,
-                     loadedListElement=LOADED_LIST_ELEMENT,
-                     storedListElement=STORED_LIST_ELEMENT):
-
-    ifAnyNode=any_node([optimize_rec(fArg,loadedListElement) for fArg in fArgs])
-
-    #print('printing and filter list node')
-    #print(ifAllNode)
-
-    listComp=list_comp(accum,loadedListElement,storedListElement,ifAnyNode)
-
-    return listComp
-
-
-def filter_dict_node(fArgs,
-                     accum=ACCUM_LOAD,
-                     loadedDictValue=LOADED_DICT_VALUE):
-
-    #print('&'*30)
-    #print(f'{ast.dump(accum)} is accum')
-    ifAnyNode=any_node([optimize_rec(fArg,loadedDictValue) for fArg in fArgs])
-    #dc=dict_comp(accum,loadedDictValue,ifAnyNode)
-    #print(f'{ast.dump(dc)} is accum')
-
-    return dict_comp(accum,loadedDictValue,ifAnyNode)
-    
-
-def filter_list_or_dict_node(fArg,accum=ACCUM_LOAD):
-
-    '''
-    print('='*30)
-    print('or_filter_list_or_dict_node')
-    print(f'{fArg} is fArg')
-    print(f'{ast.dump(accum)} is accum')
-
-    print('or_filter_list_or_dict_node')
-    print(f'{fArg} is fArg')
-    print(f'{accum} is accum')
-    v=if_list_or_dict(accum,
-                      fArg,
-                      or_filter_dict_node,
-                      or_filter_list_node)
-    print(f'{v} is v')
-    '''
-
-    return if_list_or_dict(accum,
-                           fArg,
-                           filter_dict_node,
-                           filter_list_node)
-
-
-###############
-# SWITCH_DICT #
-###############
-
-def chain_if_else(switchDictList,elseFArg):
-    # Using tail recursion here.
-    if not switchDictList:
-
-        return elseFArg
-
-    condition,statement=switchDictList[0]
-
-    return IfExp(test=condition,
-                 body=statement,
-                 orelse=chain_if_else(switchDictList[1:],elseFArg))
-    
-
-def switch_dict_node(fArg,accum=ACCUM_LOAD):
-    # For now, equality checking in switch dict will not be used.  Too inconvenient to
-    # parse.
-    switchDictList=[(optimize_rec(k,accum),optimize_rec(v,accum)) \
-                    for (k,v) in fArg.items() if k != 'else']
-    elseFArg=optimize_rec(fArg['else'],accum)
-    
-    return chain_if_else(switchDictList,elseFArg)
-
-   
-
-##############
-# DICT ASSOC #
-##############
-
-def dict_assoc_node(fArgs,accum=ACCUM_LOAD):
-
-    #print('*'*30)
-    #print('dict_assoc_node')
-    #print(f'{ast.dump(accum)} is accum')
-    #print(f'{fArgs} is fArgs')
-    key=fArgs[1]
-    fArg=fArgs[2]
-    keyNode=parse_literal(key)
-    optimizedFArg=optimize_rec(fArg,accum)
-
-    #print(f'{key} is key')
-    #print(f'{fArg} is fArg')
-    #print(f'{ast.dump(optimizedFArg)} is optimizedFArg')
-
-    if len(fArgs) == 3:
-        
-        return callable_node_with_args(dct_assoc,[accum,keyNode,optimizedFArg])
-
-    return callable_node_with_args(dct_assoc,
-                                   [dict_assoc_node(fArgs[2::],accum),
-                                    keyNode,
-                                    optimizedFArg])
-
-
-##############
-# DICT MERGE #
-##############
-
-def dict_merge_node(fArgs,
-                    accum=ACCUM_LOAD,
-                   ):
-
-    fArg=fArgs[1]
-    optimizedFArg=optimize_rec(fArg,accum)
-
-    return callable_node_with_args(dct_merge,
-                                   [accum,
-                                    optimizedFArg])
-
-
-
-##########################
-# HELPERS FOR LIST FARGS #
-##########################
-
-def get_nodes_for_list_f_arg(node):
-
-    if isinstance(node,List):
-
-        return node.elts[1:]
-
-    elif isinstance(node,Call):
-
-        return node.args
-
-    else:
-
-        raise Exception(f'unacceptable node type {node} for dict dissoc')
-
-
-def build_list_f_arg(fArgs,node,f):
-
-    fArgs=fArgs[1:]
-    nodes=get_nodes_for_list_f_arg(node)
-    nameReplacedFArgs=[replace_with_name_node_rec(fArg,n)\
-                       for (fArg,n) in zip(fArgs,nodes)]
-
-    return f(*nameReplacedFArgs)
-
-
-###############
-# DICT DISSOC #
-###############
-   
-def dict_dissoc_node(fArgs,accum=ACCUM_LOAD):
-
-    key=fArgs[-1]
-    keyNode=parse_literal(key)
-
-    if len(fArgs) == 2:
-
-        return callable_node_with_args(dct_dissoc,[accum,keyNode])
-
-    return callable_node_with_args(dct_dissoc,
-                                   [dict_dissoc_node(fArgs[:-1],accum),
-                                    keyNode])
-    
-
-##############
-# LIST BUILD #
-##############
-
-def list_build_node(fArgs,accum=ACCUM_LOAD):
-
-    fArgs=fArgs[1:]
-    optimizedFArgs=[optimize_rec(fArg,accum) for fArg in fArgs]
-    
-    return List(elts=optimizedFArgs,
-                ctx=Load())
-
-
-##############
-# DICT BUILD #
-##############
-
-def dict_build_node(fArg,accum=ACCUM_LOAD):
-
-    #print('*'*30)
-    #print('dict_build_node')
-    #print(f'{fArg} is fArg')
-
-    if is_explicit_dict_build(fArg):
-
-        #print('is_explicit_dict_build')
-
-        if len(fArg) >= 3:
-
-            keys=fArg[1::2]
-            vals=fArg[2::2]
-
-        else:
-
-            # This is for db('key')
-
-            keys=[optimize_rec(fArg[1],accum)]
-            vals=[accum]
-            
-            return Dict(keys=keys,values=vals,ctx=Load())
-            
-    else:
-
-        keys=fArg.keys()
-        vals=fArg.values()
-
-    keys=[optimize_rec(k,accum) for k in keys]
-    vals=[optimize_rec(v,accum) for v in vals]
-
-    #print(f'{[ast.dump(n) for n in keys]} is keys')
-    #print(f'{[ast.dump(n) for n in keys]} is vals')
-
-    return Dict(keys=keys,values=vals,ctx=Load())
-
-
-#################
-# EMBEDDED PYPE #
-#################
-
-def embedded_pype_chain(fArgs,accum):
-
-    if len(fArgs) == 1:
-
-        return optimize_rec(fArgs[0],accum)
-
-    return optimize_rec(fArgs[0],embedded_pype_chain(fArgs[1:],accum))
-
-    
-def embedded_pype_node(fArgs,accum=ACCUM_LOAD):
-
-    fArgs=fArgs[1:]
-
-    fArgs.reverse()
-
-    pypeChain=embedded_pype_chain(fArgs,accum)
-
-    return pypeChain
-
-
-######
-# DO #
-######
-
-def do_lambda_node(node):
-
-    return Lambda(args=arguments(args=[arg(arg='do_lambda_arg', annotation=None)], 
-                                 vararg=None, 
-                                 kwonlyargs=[], 
-                                 kw_defaults=[], 
-                                 kwarg=None, 
-                                 defaults=[]),
-                  body=node)
-
-
-
-def do_node(fArgs,accum=ACCUM_LOAD):
-
-    fArg=fArgs[1]
-    optimizedNode=optimize_rec(fArg,DO_LAMBDA_ARG)
-    lambdaNode=do_lambda_node(optimizedNode)
-    callNode=callable_node_with_args(do_func,
-                                     [accum,
-                                      lambdaNode])
-
-    #print(f'{callNode} is callNode')
-
-    return callNode
-      
-
-def ast_name_node(fArg,accumNode):
-
-    bookmarkName=fArg.name
-
-    return Name(id=bookmarkName,ctx=Load())
-
-
-#########
-# QUOTE #
-#########
-
-def quote_node(fArgs,accum=ACCUM_LOAD):
-    # print('*'*30)
-    # print('quote_node')
-
-    fArg=fArgs.val()
-    
-    # print(f'{fArg.val()} is fArg')
-
-    node=optimize_rec(fArg,ACCUM_LOAD)
-
-    # print(f'{dump(node)} is node')
-
-    return node
+    return soft_index_node(fArgs,params)
 
 
 ############
@@ -1038,33 +448,33 @@ def assign_node_to_accum(node,accum=ACCUM_STORE):
 # OPTIMIZER FUNCTIONS #
 #######################
 
-OPTIMIZE_PAIRS=[(is_callable,callable_node),
-                (is_mirror,mirror_node),
-                #(is_index_arg,index_arg_node),
-                (is_lambda,lambda_node),
-                (is_slice,slice_node),
+OPTIMIZE_PAIRS=[(is_mirror,mirror_node),
+                (is_callable,callable_node),
                 (is_index,index_node),
-                (is_map,map_dict_or_list_node),
-                (is_bookmark,ast_name_node),
-                (is_filter,filter_list_or_dict_node),
-                (is_switch_dict,switch_dict_node),
-                (is_dict_assoc,dict_assoc_node),
-                (is_dict_dissoc,dict_dissoc_node),
-                (is_dict_merge,dict_merge_node),
-                (is_list_build,list_build_node),
-                (is_dict_build,dict_build_node),
-                (is_embedded_pype,embedded_pype_node),
-                (is_do,do_node),
-                (is_reduce,reduce_node),
-                (is_quote,quote_node),
+                # (is_lambda,lambda_node),
+                # (is_slice,slice_node),
+                # (is_map,map_dict_or_list_node),
+                # (is_bookmark,name_bookmark_node),
+                # (is_filter,filter_list_or_dict_node),
+                # (is_switch_dict,switch_dict_node),
+                # (is_dict_assoc,dict_assoc_node),
+                # (is_dict_dissoc,dict_dissoc_node),
+                # (is_dict_merge,dict_merge_node),
+                # (is_list_build,list_build_node),
+                # (is_dict_build,dict_build_node),
+                # (is_embedded_pype,embedded_pype_node),
+                # (is_do,do_node),
+                # (is_reduce,reduce_node),
+                # (is_quote,quote_node),
                ]
+'''
 LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),
                        (is_mirror,mirror_node),
                        (is_lambda,lambda_node),
                        (is_slice,slice_node),
                        (is_index,lambda_index_node),
                        (is_map,map_dict_or_list_node),
-                       (is_bookmark,ast_name_node),
+                       (is_bookmark,name_bookmark_node),
                        (is_filter,filter_list_or_dict_node),
                        (is_switch_dict,switch_dict_node),
                        (is_dict_assoc,dict_assoc_node),
@@ -1075,12 +485,18 @@ LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),
                        (is_embedded_pype,embedded_pype_node),
                        (is_do,do_node),
                        ]
+'''
 
+######################
+# DEFAULT PARAMETERS #
+######################
+
+DEFAULT_PARAMS={'accum':ACCUM_LOAD,
+                'optimizePairs':OPTIMIZE_PAIRS,
+                'embeddingNodes':[]}
 
 def optimize_rec(fArg,
-                 accumNode=ACCUM_LOAD,
-                 optimizePairs=OPTIMIZE_PAIRS,
-                 embeddingNodes=[]
+                 params=DEFAULT_PARAMS,
                  ):
 
     #print('>'*30)
@@ -1088,7 +504,7 @@ def optimize_rec(fArg,
     #print(f'{fArg} is fArg')
 
     fArg=delam(fArg)
-    optimizers=[opt_f for (evl_f,opt_f) in optimizePairs if evl_f(fArg)]
+    optimizers=[opt_f for (evl_f,opt_f) in params['optimizePairs'] if evl_f(fArg)]
     evalType=type(fArg)# if evalType is None else evalType
 
     if not optimizers:
@@ -1119,26 +535,28 @@ def optimize_rec(fArg,
 
             optimizer=optimizer['default']
 
-    node=optimizer(fArg,accumNode)
+    node=optimizer(fArg,params)
 
-    for embedding_node_func in embeddingNodes:
+    for embedding_node_func in params['embeddingNodes']:
 
-        node=embedding_node_func(node,fArg)
+        node=embedding_node_func(node,fArg,params)
 
     return node
 
 
-def optimize_f_args(fArgs,startNode,embeddingNodes):
+def optimize_f_args(fArgs,params=DEFAULT_PARAMS):
 
     # print('*'*30)
     # print('optimize_f_args')
     # print(f'{ast.dump(startNode)} is startNode')
 
+    startNode=params['startNode']
+    embeddingNodes=params['embeddingNodes']
     assignList=[assign_node_to_accum(startNode)]
-
+    
     for fArg in fArgs:
 
-        opt=optimize_rec(fArg,ACCUM_LOAD,OPTIMIZE_PAIRS,embeddingNodes)
+        opt=optimize_rec(fArg,params)
         
         if is_list(opt):
 

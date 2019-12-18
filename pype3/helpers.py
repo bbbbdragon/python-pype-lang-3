@@ -38,10 +38,6 @@ def get_call_or_false_core(obj,useCallable,keys):
     '''
     This is the biggie, however, as it defines the logic for indexing.  
     '''
-    # print('get_call_or_false_core')
-    # short_pp(f'{obj} is obj')
-    # short_pp(f'{keys} is keys')
-    # print(f'{useCallable} is useCallable')
 
     # If the object is a callable and we are allowed to call it, then
     # we call it on either the next key or nothing at all.
@@ -106,8 +102,6 @@ def get_call_or_false_core(obj,useCallable,keys):
     # What if obj is an object, and the first key is an attribute?
     elif is_string(keys[0]) and hasattr(obj,keys[0]):
         
-        # print('getting attribute')
-
         # Get the attribute ...
         obj=getattr(obj,keys[0])
 

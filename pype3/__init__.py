@@ -144,7 +144,8 @@ def pypeify(verbose=False,
             keyStep=False,
             buildKeyStep=False,
             njitOptimized=False,
-            hardIndexing=False):
+            hardIndexing=False,
+            startVal=None):
     '''
     TODO: Recursive Functions can't be compiled with explicit build.
     '''
@@ -295,6 +296,16 @@ def pypeify(verbose=False,
             optimizeParams={'startNode':accumNode,
                             'embeddingNodes':embeddingNodes,
                             'hardIndexing':hardIndexing}
+
+            '''
+            Here, we allow the user to give the compilation a 'cannoncial' 
+            input, which will be necessary for certain parsing decisions,
+            such as hard- vs soft-indexing.
+            '''
+            if startVal is not None:
+
+                optimizeParams['startVal']=startVal
+
             fArgTrees=optimize_f_args(fArgs,optimizeParams)
 
             print_obj(fArgTrees,'printing fArg trees',verbose)

@@ -152,6 +152,7 @@ def get_module_alias(fArg):
 
     return varNames[0]
 
+
 ###################
 # DEBUGGING NODES #
 ###################
@@ -193,6 +194,12 @@ def mirror_node(fArgs,params):
     return params['accum']
 
 
+############
+# CALLABLE #
+############
+
+# helpers 
+
 def module_attribute(moduleStrings):
 
     if len(moduleStrings) == 1:
@@ -225,6 +232,8 @@ def find_type(name):
 
     return ''
 
+
+# helper nodes
 
 def function_node(fArg,params):
 
@@ -313,7 +322,8 @@ def callable_node_with_args(fArg,callableArgs,params):
                 keywords=[],
                 args=callableArgs)
 
-                          
+
+# nodes                        
 
 def callable_node(fArg,params):
 
@@ -323,6 +333,44 @@ def callable_node(fArg,params):
 #########
 # INDEX #
 #########
+
+# constants
+
+DEFAULT_INDEX_PARAMS={'accum':ACCUM_LOAD,
+                      'getFunc':get_call_or_false}
+
+# helpers
+
+def is_soft_indexable(fArgs,params):
+
+    print('*'*30)
+    print('is_soft_indexable')
+    print(f'{fArgs} is fArgs')
+    print(f'{params} is params')
+
+    if 'startVal' in params \
+       and params['startVal'] is not None:
+
+        obj=params['startVal']
+        index=fArgs[1][0]
+
+        if is_object(obj) and is_string(index):
+
+            return True
+
+    if is_callable(fArgs[0]) and fArgs[0] == getitem:
+
+        return True
+
+    return False
+   
+ 
+def has_getitem(fArgs):
+
+    return is_callable(fArgs[0]) and fArgs[0] == getitem
+
+
+# helper nodes
 
 def index_val_node(val,params):
 
@@ -343,38 +391,87 @@ def index_val_node(val,params):
     return val
 
 
-DEFAULT_INDEX_PARAMS={'accum':ACCUM_LOAD,
-                      'getFunc':get_call_or_false}
 
-def soft_index_node(fArgs,params=DEFAULT_INDEX_PARAMS):
-
-    accum=params['accum']
-    getFunc=params['getFunc'] if 'getFunc' in params else get_call_or_false
-
-    indexedObject=fArgs[0]
-    indices=[f[0] for f in fArgs[1:]]
-
-    if is_callable(fArgs[0]) and fArgs[0] == getitem:
-        
-        indexedObject=fArgs[1]
-        indices=fArgs[2:]
+def optimized_indices_nodes(indexedObject,indices,params):
     
+    # print('*'*30)
+    # print('optimized_indices_nodes')
+    # print(f'{indexedObject} is indexedObject')
+
     optimizedIndexedObject=optimize_rec(indexedObject,params) 
     optimizedIndices=[optimize_rec(i,params) if is_f_arg_for_node(i) \
                       else i for i in indices]
     optimizedIndicesNodes=[index_val_node(index,params) \
                            for index in optimizedIndices]
 
+    return optimizedIndexedObject,optimizedIndicesNodes
+
+
+def soft_index_node(fArgs,params):
+
+    # print('*'*30)
+    # print('soft_index_node')
+    # print(f'{fArgs} is fArgs')
+    # print(f'{params} is params')
+
+    params={**DEFAULT_INDEX_PARAMS,**params}
+    getFunc=params['getFunc'] if 'getFunc' in params else get_call_or_false
+    indexedObject=fArgs[0]
+    indices=[f[0] for f in fArgs[1:]] 
+
+    # This is for objects.
+
+    if has_getitem(fArgs):
+
+        indexedObject=fArgs[1]
+        indices=fArgs[2:]
+
+    optimizedIndexedObject,\
+    optimizedIndicesNodes=optimized_indices_nodes(indexedObject,indices,params)
+
     return callable_node_with_args(getFunc,
                                    [optimizedIndexedObject]+optimizedIndicesNodes,
                                    params)
+
+
+
+def hard_index_node(fArgs,params):
+
+    # print('*'*30)
+    # print('hard_index_node')
+    # print(f'{fArgs} is fArgs')
+    
+    params={**DEFAULT_INDEX_PARAMS,**params}
+
+    # Here, we cannot run hard indexing on the item, but we know it's indexible,
+    # so we run soft-indexing on it.
+
+    if is_soft_indexable(fArgs,params):
+
+        # print('hard indexable is soft indexable')
+
+        return soft_index_node(fArgs,params)
+
+    indexedObject=fArgs[0]
+    indices=[f[0] for f in fArgs[1:]]
+    optimizedIndexedObject,\
+    optimizedIndicesNodes=optimized_indices_nodes(indexedObject,indices,params)
+
+    # print(f'{ast.dump(optimizedIndexedObject)} is optimizedIndexedObject')
+    # print([ast.dump(n) for n in optimizedIndicesNodes])
+    # print('is optimizedIndicesNodes')
+
+    return Subscript(value=optimizedIndexedObject,
+                     ctx=Load(),
+                     slice=Index(value=optimizedIndicesNodes[0],
+                                 ctx=Load()))
 
 
 def index_node(fArgs,params=DEFAULT_INDEX_PARAMS):
 
     if 'hardIndexing' in params and params['hardIndexing']:
 
-        return soft_index_node(fArgs,params)
+        return hard_index_node(fArgs,params)
 
     return soft_index_node(fArgs,params)
 
@@ -496,11 +593,14 @@ DEFAULT_PARAMS={'accum':ACCUM_LOAD,
                 'embeddingNodes':[]}
 
 def optimize_rec(fArg,
-                 params=DEFAULT_PARAMS,
+                 params,
                  ):
 
-    #print('>'*30)
-    #print('optimize_rec')
+    params={**DEFAULT_PARAMS,**params}
+    # print('>'*30)
+    # print('optimize_rec')
+    # print(f'{params} is params')
+
     #print(f'{fArg} is fArg')
 
     fArg=delam(fArg)

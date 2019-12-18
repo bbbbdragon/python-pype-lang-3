@@ -83,6 +83,7 @@ def is_getitem(el):
 
 
 def is_index(fArg):
+
     # print('is_index')
     # print(f'{fArg} is fArg')
     # print(f'{is_tuple(fArg) and len(fArg) == 2 and is_getitem(fArg[1])}')

@@ -45,6 +45,11 @@ def date_range_days(begin,days):
     return [begin+dt.timedelta(days=d) for d in range(days)]
 
 
+def date_string_range_days(begin,days):
+
+    return [date_to_date_string(d) for d in date_range_days(begin,days)]
+
+
 def date_int_range_days(begin,days):
 
     return [date_int(d) for d in date_range_days(begin,days)]

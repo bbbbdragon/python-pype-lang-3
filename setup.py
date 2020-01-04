@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 #    LONG_DESCRIPTION=fh.read()
 
 setup(name='python-pype-lang-3',
+      python_requires='>3.8.0a2',
       version='3.0.10',
       description='Version 3 of pype, a Python-integrated functional programming language - Provides easy-to-use pseudo-macros for common functional programming tasks such as maps, reduces, filters, conditionals, dictionary manipulations, and list manipulations..',
       #long_description_content_type="text/markdown",
@@ -11,7 +12,7 @@ setup(name='python-pype-lang-3',
       classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.8',
         'Operating System :: OS Independent',
       ],
       keywords='functional programming map reduce filter lambda conditional',

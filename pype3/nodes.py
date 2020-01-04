@@ -164,7 +164,7 @@ def print_and_eval_node(tree,fArg):
                 keywords=[])
 
 
-def keystep_node(tree,fArg,**params):
+def keystep_node(tree,fArg,params):
 
     try:
 
@@ -185,7 +185,7 @@ def keystep_node(tree,fArg,**params):
 # MIRROR #
 ##########
 
-def mirror_node(fArgs,params):
+def mirror_node(fArgs,val,params):
     
     # print('mirror_node')
     # print(f'{fArgs} is fArgs')
@@ -235,7 +235,7 @@ def find_type(name):
 
 # helper nodes
 
-def function_node(fArg,params):
+def function_node(fArg,params,val):
 
     #print('>'*30)
     #print('function_node')
@@ -325,7 +325,7 @@ def callable_node_with_args(fArg,callableArgs,params):
 
 # nodes                        
 
-def callable_node(fArg,params):
+def callable_node(fArg,val,params):
 
     return callable_node_with_args(fArg,[params['accum']],params)
 
@@ -547,7 +547,7 @@ def assign_node_to_accum(node,accum=ACCUM_STORE):
 
 OPTIMIZE_PAIRS=[(is_mirror,mirror_node),
                 (is_callable,callable_node),
-                (is_index,index_node),
+                # (is_index,index_node),
                 # (is_lambda,lambda_node),
                 # (is_slice,slice_node),
                 # (is_map,map_dict_or_list_node),
@@ -592,81 +592,105 @@ DEFAULT_PARAMS={'accum':ACCUM_LOAD,
                 'optimizePairs':OPTIMIZE_PAIRS,
                 'embeddingNodes':[]}
 
+########################
+# OPTIMIZATION HELPERS #
+########################
+
+
+def eval_node(node,namespace):
+
+    localNamespace={}
+    mod=Module(body=[Assign(targets=[Name(id='temporarilyEvaluatedNode', 
+                                          ctx=Store())], 
+                            value=node)])
+
+    fix_missing_locations(mod)
+
+    exec(compile(mod,
+                 filename='<ast>',
+                 mode='exec'),
+         namespace,
+         localNamespace)
+
+    return localNamespace['temporarilyEvaluatedNode']
+
+
+##########################
+# OPTIMIZATION FUNCTIONS #
+##########################
+
 def optimize_rec(fArg,
                  params,
-                 ):
+                 val=None,
+                ):
 
+    '''
+    First, deepcopy params, and set default params.
+    '''
     params={**DEFAULT_PARAMS,**params}
-    # print('>'*30)
-    # print('optimize_rec')
-    # print(f'{params} is params')
 
-    #print(f'{fArg} is fArg')
-
+    '''
+    Extract the original fArg using delam.
+    '''
     fArg=delam(fArg)
-    optimizers=[opt_f for (evl_f,opt_f) in params['optimizePairs'] if evl_f(fArg)]
-    evalType=type(fArg)# if evalType is None else evalType
 
+    '''
+    Find out the node-building function 'node_f', depending on what kind of 
+    fArg structure this is, 'evl_f'.
+    '''
+    optimizers=[node_f for (evl_f,node_f) in params['optimizePairs'] if evl_f(fArg)]
+
+    '''
+    If no evl_f evaluates as true, then it is a literal, so return a literal
+    node.
+    '''
     if not optimizers:
 
         return parse_literal(fArg)
 
-    #print(f'{optimizers} is optimizers')
-
+    '''
+    Get the last node_f.  Node that this implies a precedence relationship.
+    '''
     optimizer=optimizers[-1]
-    
-    #print(f'{optimizer} is optimizer')
 
-    # TODO - either get rid of this or implement it properly
-    if is_dict(optimizer):
+    '''
+    Let's run the fucker!  Node is an AST node.
+    '''
+    node=optimizer(fArg,val,params)
 
-        #print(f'optimizer is dict')
-        #print(f'{evalType} is evalType')
-
-        if evalType in optimizer:
-
-            #print(f'{optimizers} is optimizers')
-            #print(f'{evalType} is evalType')
-            #print(f'{optimizer} is optimizer')
-
-            optimizer=optimizer[evalType]
-
-        else:
-
-            optimizer=optimizer['default']
-
-    node=optimizer(fArg,params)
-
+    '''
     for embedding_node_func in params['embeddingNodes']:
 
         node=embedding_node_func(node,fArg,params)
+    '''
 
     return node
 
 
 def optimize_f_args(fArgs,params=DEFAULT_PARAMS):
 
-    # print('*'*30)
-    # print('optimize_f_args')
-    # print(f'{ast.dump(startNode)} is startNode')
+    print('*'*30)
+    print('optimize_f_args')
 
     startNode=params['startNode']
-    embeddingNodes=params['embeddingNodes']
+    val=None
+
+    if 'namespace' in params:
+
+        val=eval_node(startNode,params['namespace'])
+
     assignList=[assign_node_to_accum(startNode)]
     
     for fArg in fArgs:
 
-        opt=optimize_rec(fArg,params)
-        
-        if is_list(opt):
+        opt=optimize_rec(fArg,params,val)
+        assignNode=assign_node_to_accum(opt)
 
-            assignList.extend(opt)
+        assignList.append(assignNode)
 
-        else:
+        if 'namespace' in params:
 
-            assignNode=assign_node_to_accum(opt)
-
-            assignList.append(assignNode)
+            val=eval_node(opt,params['namespace'])
 
     #print('*'*30)
     #print('optimize_f_args')

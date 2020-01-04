@@ -145,8 +145,19 @@ def pypeify(verbose=False,
             buildKeyStep=False,
             njitOptimized=False,
             hardIndexing=False,
-            startVal=None):
+            buildEval=True):
     '''
+    Here are the params:
+
+    verbose - a verbose build so you can see the syntax trees and fArgs
+    timed - prints the runtime for a call to the function
+    printAccums - print the accums
+    keyStep - allows you to keystroke each accum as it's evaluated
+    buildKeyStep - allows you to keystroke each tree as it's built
+    njitOptimized - tries to apply njit to the parse tree
+    hardIndexing - uses subscripting when building rather than 'get_call_or_false'
+    buildEval - evaluates parts of the parse tree
+
     TODO: Recursive Functions can't be compiled with explicit build.
     '''
 
@@ -189,8 +200,6 @@ def pypeify(verbose=False,
         Grab aliases for pype in the global namespace.
         '''
         aliases=aliases_for_pype(glbls)
-
-        # print(f'{aliases} is aliases')
 
         @wraps(pype_func)
         def build_wrapper(*args):
@@ -256,6 +265,7 @@ def pypeify(verbose=False,
             accumNode=replacer.accumNode
 
             print_tree(tree,'after call name replacer tree is',verbose,buildKeyStep)
+
             '''
             Now, we want to iterate through the tree and see if there are any BinOp
             nodes, representing expressions such as a+1, len+3, etc.  We are doing
@@ -298,14 +308,19 @@ def pypeify(verbose=False,
                             'hardIndexing':hardIndexing}
 
             '''
-            Here, we allow the user to give the compilation a 'cannoncial' 
-            input, which will be necessary for certain parsing decisions,
-            such as hard- vs soft-indexing.
+            Here is where we will try out our evaluation strategy.
             '''
-            if startVal is not None:
+            if buildEval:
 
-                optimizeParams['startVal']=startVal
-
+                argGetterTree,\
+                replacer,\
+                recompiled_f=apply_tree_transformation(originalTree,
+                                                       ArgGetter(),
+                                                       originalFuncName,
+                                                       glbls)
+                argNameSpace=recompiled_f(*args)
+                optimizeParams['namespace']={**glbls,**argNameSpace}
+            
             fArgTrees=optimize_f_args(fArgs,optimizeParams)
 
             print_obj(fArgTrees,'printing fArg trees',verbose)

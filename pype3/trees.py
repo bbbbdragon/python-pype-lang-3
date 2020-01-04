@@ -638,3 +638,38 @@ def is_pype_decorated_function(f):
         return False
 
     return False
+
+
+##############
+# ARG GETTER #
+##############
+
+class ArgGetter(NodeVisitor):
+    '''
+    This makes the function return a dictionary of its arguments.
+    '''
+    def visit_FunctionDef(self,node):
+
+        args=node.args.args
+        keys=[]
+        vals=[]
+
+        for arg in args:
+
+            argName=arg.arg
+
+            key=Str(s=argName)
+            val=Name(id=argName,ctx=Load())
+
+            keys.append(key)
+            vals.append(val)
+
+        dictNode=Dict(keys=keys,values=vals,ctx=Load())
+        returnNode=Return(value=dictNode,ctx=Load())
+
+        node.body=[returnNode]
+        node.decorator_list=[]
+        node=fix_missing_locations(node)
+
+        self.generic_visit(node)
+

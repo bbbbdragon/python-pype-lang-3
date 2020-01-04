@@ -1,5 +1,5 @@
 '''
-python3 watch_file.py -p2 python3 basic_tutorial.py  -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 mirror_index_slice.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,tup,db,a,iff,d,ift,squash,ifp
 # import sys 
@@ -16,11 +16,29 @@ from pype3.numpy_helpers import *
 Basic tutorial that covers mirrors, indexes, and slices.
 '''
 
-'''
+# Mirrors
+
 def mirror_example(n):
 
-    _,
+    (_,
+    )
 
+def mirror_add_example(n):
+
+    (_*2,
+    )
+
+def accum_example_1(n,x):
+
+    (n,
+     _+x)
+
+def accum_example_1(n,x):
+
+    (_+x,
+    )
+
+# Callables
 
 def f(n):
 
@@ -29,8 +47,10 @@ def f(n):
 
 def callable_example(x):
 
-    f,
+    (f,
+    )
 
+# Indices
 
 def index_example_multi_ls(ls):
 
@@ -40,7 +60,29 @@ def index_example_multi_ls(ls):
 def index_example_dct(dct):
 
     _.item,
-'''
+
+# Lambdas
+
+def f2(x,y):
+    
+    return x+y
+
+def f3(x,y):
+
+    return x*y
+
+def lambda_example_1(n,x):
+
+    ((f2,_,x),
+    )
+
+
+def lambda_example_2(n,x):
+
+    ((f3,(f2,_,x),f1), # ((n+x)*(n+1))
+    )
+
+
 
 '''
 def index_example_dct_ls(dct):
@@ -91,7 +133,6 @@ def hard_index_example_dct(dct):
 def hard_index_example_dct_ls(dct):
 
     _.item[0],
-'''
 
 
 class TestListObj(object):
@@ -104,32 +145,28 @@ class TestListObj(object):
 
         return self.ls
 
-
 @pypeify(hardIndexing=True,
          verbose=True)
 def hard_index_example_obj_val(obj):
 
     _.ls[0],
 
-
 @pypeify(verbose=True)
 def hard_index_example_get_obj_val(obj):
 
     _.get_ls,
-
+'''
 
 pypeify_namespace(globals())
 
 if __name__=='__main__':
 
-    '''
     print('*'*30)
     print('mirrors')
 
-    x=mirror_example(1)
-
     print(mirror_example(1))
 
+    '''
     print('*'*30)
     print('callables')
     
@@ -170,17 +207,15 @@ if __name__=='__main__':
     dct={'item':'hi'}
 
     print(hard_index_example_dct(dct))
-    '''
 
     obj=TestListObj([1,2,3])
 
     print(hard_index_example_obj_val(obj))
 
-    obj=TestListObj([1,2,3])
+    # obj=TestListObj([1,2,3])
 
-    print(hard_index_example_get_obj_val(obj))
+    # print(hard_index_example_get_obj_val(obj))
 
-    '''
     dct={'item':[5,4,3]}
 
     print(index_example_dct_ls(dct))

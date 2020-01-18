@@ -1,4 +1,14 @@
-# Pype
+# Pype3
+
+## Before you begin reading
+
+You can understand the basic syntactic ideas behind pype in the `tutorial' directory.  To run any script, type the `python3 ...` command in the first docstring.  It is a good idea to tour the language in the following order:
+
+* `mirrors_and_indices.py` - Mirror object, and overloads of arithmetic and Boolean operators, and how to access lists, objects, and dictionaries.
+* `callables_and_lambdas.py` - Regular callables and `lambda` structures, which allow you to place variable names where you want them.
+* `dicts_and_lists.py` - Commonly used JSON manipulations. 
+* `functional.py` - Maps, filters, and reduces.
+* `macros_and_helpers.py` - Helpful macros that you may like.  
 
 ## What and Why?
 
@@ -10,9 +20,9 @@ df.dropna()
 ...
 result=get_result_finally(df)
 ```
-It was then, on a particular NLP-related project, that I discovered Clojure, and its ->> macro.  Functional programming was something extremely powerful for me.  I felt as if I switched from a bee-bee gun to an Uzi ... no, a gatling gun.  Before FP, difficult, snarling problems only got angrier as I shot at them.  Now, with the pull of a trigger, they vanished into a peaceful, quiet, red mist.  
+It was then, on a particular NLP-related project, that I discovered Clojure, and its threading ->> macro.  Functional programming was something extremely powerful for me.  I felt as if I switched from a bee-bee gun to an Uzi ... no, a gatling gun.  Before FP, difficult, snarling problems only got angrier as I shot at them.  Now, with the pull of a trigger, they vanished into a peaceful, quiet, red mist.  
 
-But I found another dilemna.  Switching languages in the office is a big no-no, and even if I wanted to use Clojure I still needed Python's extremely mature libraries, embedded in microservices that the main Clojure app called through HTTP.  So I started to code functionally in Python.  Here's how pype came about.
+But I found another dilemna.  If I wanted to use Clojure, I still needed Python's extremely mature libraries, embedded in microservices that the main Clojure app called through HTTP.  So I started to code functionally in Python.  Here's how pype came about.
 
 I realized that a series of transformations on a data structure could be implemented in Python as a reduce, so I could build a function, pype, to take a starting value and apply functions to it in succession:
 ```
@@ -117,15 +127,15 @@ def round_age(age):
   return int(age/10)
  
 pype( ls,
-      [_a('age',(round_age,_['age']))],
+      [a('age',(round_age,_.age))],
       lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
       lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
      )
 ```
-Now, the expression _a('age',(round_age,_['age'])) says, "extract the 'age' value from the JSON, evaluate round_age on it, and assign the resulting value to 'age' in the JSON.  But wait, why even enclose the numerical computation in a function?  Could we just specify it in this new language?
+Now, the expression a('age',(round_age,_.age)) says, "extract the 'age' value from the JSON, evaluate round_age on it, and assign the resulting value to 'age' in the JSON.  But wait, why even enclose the numerical computation in a function?  Could we just specify it in this new language?
 ```
 pype( ls,
-      [_a('age',(int,_['age']/10))],
+      [a('age',(int,_.age/10))],
       lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
       lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
      )
@@ -139,7 +149,7 @@ def add_age_to_dct(dct,js):
   return dct
   
 pype( ls,
-      [_a('age',(int,_['age']/10)],
+      [a('age',(int,_.age/10)],
       [(add_age_to_dct,),defaultdict(lambda:list())],
       lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
      )
@@ -149,7 +159,7 @@ pype( ls,
 from pype.helpers import merge_ls_dct_no_key
 
 pype( ls,
-      [_a('age',(int,_['age']/10))],
+      [a('age',(int,_.age/10))],
       (merge_ls_dct_no_key,_,'age'),
       lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
      )
@@ -164,7 +174,7 @@ from pype import build_pype as bp
 names=bp([_['name']])
 
 pype( ls,
-      [_a('age',(int,_['age']/10))],
+      [a('age',(int,_.age/10))],
       (merge_ls_dct_no_key,_,'age'),
       [names]
      )
@@ -188,7 +198,7 @@ It was this process that turned pype from a simple reduce function into somethin
 
 You may say this is "syntactic sugar".  I hate the expression "syntactic sugar".  Sugar is something you don't need.  Sugar rots your teeth.  Sugar makes you a diabetic.  You sprinkle sugar in your tea at the weekly Princeton University English Department faculty meeting, listening politely to the Dean's passive-aggressive comments about your latest novel.  The metaphor seemed to imply that more concise ways of expressing an idea were bad for you, that if you aren't thinking in terms of "for(int i=0; i <= LENGTH; i++){ ...", you aren't a real programmer.  Here's a little secret - to every programmer, every other programmer is not a real programmer.  We need, collectively, to get over it.
 
-I didn't want "syntactic sugar".  Sugar doesn't change things deeply, make you see things differently.  No, motherfucker, I wanted "syntactic plutonium".    
+I didn't want "syntactic sugar".  Sugar doesn't change things deeply, make you see things differently.  No, I wanted "syntactic plutonium".    
 
 So I decided to create what I call "pseudo-macros", or "fArgs" - syntactically valid Python expressions which are, in an of themselves, no more than meaningless native Python data structures - lists, tuples, and dictionaries, mostly - but that, when used as arguments to a certain function, perform common FP operations.
 
@@ -206,7 +216,7 @@ Pype uses Python3.6 or above.
 
 You can install pype simply by typing:
 ```
-pip3 python-pype-lang
+pip3 install python-pype-lang-3
 ```
 Ensure you are running under root if you do not have proper permissions.  
 
@@ -215,10 +225,10 @@ Ensure you are running under root if you do not have proper permissions.
 Clone this repo, and cd into `python-pype-lang`.  To install on your local machine, under root, run:
 
 ```
-cd pype
+cd python-pype-lang-3
 pip3 setup.py install
 ```
-To re-install, you will need to run the following script from `python-pype-lang`:
+To re-install, you will need to run the following script from `python-pype-lang-3`:
 ```
 ./reinstall_from_source.sh
 ```
@@ -262,9 +272,7 @@ In addition, there is an example of a Docker container, described in `examples/s
 
 # FAQ
 
-* "Is Pype Fast"
-
-Interpreted pype isn't very fast.  Optimized pype runs as fast as regular Python, because it is.  But also, ask yourself something - you're using Python.  You're not programming microprocessors for toasters in C.  Does it really matter if your program runs in 3 seconds instead of 2?
+* "Is Pype Fast" Pype runs as fast as regular Python, because it is.  But also, ask yourself something - you're using Python.  You're not programming microprocessors for toasters in C.  Does it really matter if your program runs in 3 seconds instead of 2?
 
 * "Is Pype Turing-Complete?"
 

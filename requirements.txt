@@ -6,3 +6,4 @@ python-dateutil
 mmh3
 requests
 flask
+twine

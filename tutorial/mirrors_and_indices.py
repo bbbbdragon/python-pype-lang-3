@@ -5,13 +5,12 @@ python3 watch_file.py -p2 python3 mirrors_and_indices.py -p1 ./reinstall_from_so
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
 from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp
-# import sys 
-# import json
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
 from copy import deepcopy
 from pype3.numpy_helpers import *
+import numpy as np
 
 '''
 Basic tutorial that covers mirrors, operators on mirrors, and indices.
@@ -38,6 +37,7 @@ def mirror_example_2_args(n,y):
     (y,
      _,
     )
+
 
 def mirror_add_example(n):
     '''
@@ -94,9 +94,17 @@ def list_index(ls):
 
 def index_arg_first(ls):
     '''
-    The _0 symbol stands for the first element of the list.
+    The _0 symbol stands for the first element of the list. 
     '''
     (_0,
+    )
+
+
+def index_arg_add(ls):
+    '''
+    The _0 symbol overrides the same operators as _.
+    '''
+    (_0+1,
     )
 
 
@@ -114,6 +122,23 @@ def embedded_list_index(ls):
     '''
     (_[0][1],
     )
+
+
+def complex_list_index(ls):
+    '''
+    Here, we are doing multiple list indices using numpy format.
+    '''
+    (_[0,1],
+    )
+
+
+def slice_index(ls):
+    '''
+    Pype accomodates slicing by applying it to the mirror operator.
+    '''
+    (_[:1],
+    )
+
 
 ######################
 # DICTIONARY INDICES #
@@ -171,75 +196,86 @@ def object_index_embedded_call(obj):
     (_.get_ls_val[0],
     )
 
+
 pypeify_namespace(globals())
 
 if __name__=='__main__':
 
-    print('*'*30)
-    print('mirrors')
-    print('*'*30)
+     print('*'*30)
+     print('mirrors')
+     print('*'*30)
 
-    print('mirror_example(1)')
-    print(mirror_example(1))
+     print('mirror_example(1)')
+     print(mirror_example(1))
 
-    print('mirror_example_2_args(1,3)')
-    print(mirror_example_2_args(1,3))
+     print('mirror_example_2_args(1,3)')
+     print(mirror_example_2_args(1,3))
 
-    print('mirror_add_example(1)')
-    print(mirror_add_example(1))
+     print('mirror_add_example(1)')
+     print(mirror_add_example(1))
 
-    print('mirror_or_example(False)')
-    print(mirror_or_example(False))
+     print('mirror_or_example(False)')
+     print(mirror_or_example(False))
 
-    print('mirror_or_example(True)')
-    print(mirror_or_example(True))
+     print('mirror_or_example(True)')
+     print(mirror_or_example(True))
 
-    print('mirror_and_example(False)')
-    print(mirror_and_example(False))
+     print('mirror_and_example(False)')
+     print(mirror_and_example(False))
 
-    print('mirror_and_example(True)')
-    print(mirror_and_example(True))
+     print('mirror_and_example(True)')
+     print(mirror_and_example(True))
 
-    print('*'*30)
-    print('indices')
-    print('*'*30)
+     print('*'*30)
+     print('list indices')
+     print('*'*30)
 
-    ls=[1,2,3,4,5]
+     ls=[1,2,3,4,5]
 
-    print('list_index(ls)')
-    print(list_index(ls))
+     print('list_index(ls)')
+     print(list_index(ls))
 
-    print('index_arg_first(ls)')
-    print(index_arg_first(ls))
+     print('index_arg_first(ls)')
+     print(index_arg_first(ls))
 
-    print('index_arg_last(ls)')
-    print(index_arg_last(ls))
+     print('index_arg_last(ls)')
+     print(index_arg_last(ls))
 
-    ls=[[1,2,3],[2,3,4]]
+     print(f'complex_list_index(ls)')
+     print(complex_list_index(ls))
+     
+     print('slice_index(ls)')
+     print(slice_index(ls))
 
-    print('embedded_list_index(ls)')
-    print(embedded_list_index(ls))
-    
-    js={'this':{'that':1}}
+     ls=[[1,2,3],[2,3,4]]
 
-    print('dict_index_brackets(js) with element present')
-    print(dict_index_brackets(js))
+     print('embedded_list_index(ls)')
+     print(embedded_list_index(ls))
+     
+     print('*'*30)
+     print('dict indices')
+     print('*'*30)
 
-    js={'this':{'notThat':1}}
+     js={'this':{'that':1}}
 
-    print('dict_index_brackets(js) with no element present')
-    print(dict_index_brackets(js))
+     print('dict_index_brackets(js) with element present')
+     print(dict_index_brackets(js))
 
-    js={'this':{'that':1}}
+     js={'this':{'notThat':1}}
 
-    print('dict_index_getitem(js)')
-    print(dict_index_getitem(js))
+     print('dict_index_brackets(js) with no element present')
+     print(dict_index_brackets(js))
 
-    print('*'*30)
-    print('object indexing')
-    print('*'*30)
+     js={'this':{'that':1}}
 
-    class ListObject:
+     print('dict_index_getitem(js)')
+     print(dict_index_getitem(js))
+
+     print('*'*30)
+     print('object indexing')
+     print('*'*30)
+
+     class ListObject:
 
         def __init__(self):
 
@@ -249,18 +285,18 @@ if __name__=='__main__':
 
             return self.ls
 
-    obj=ListObject()
+     obj=ListObject()
 
-    print('object_index_getitem(obj)')
-    print(object_index_getitem(obj))
+     print('object_index_getitem(obj)')
+     print(object_index_getitem(obj))
 
-    print('object_index_embedded_getitem(obj)')
-    print(object_index_embedded_getitem(obj))
+     print('object_index_embedded_getitem(obj)')
+     print(object_index_embedded_getitem(obj))
 
-    print('object_index_call(obj)')
-    print(object_index_call(obj))
+     print('object_index_call(obj)')
+     print(object_index_call(obj))
 
-    print('object_index_embedded_call(obj)')
-    print(object_index_embedded_call(obj))
+     print('object_index_embedded_call(obj)')
+     print(object_index_embedded_call(obj))
 
 

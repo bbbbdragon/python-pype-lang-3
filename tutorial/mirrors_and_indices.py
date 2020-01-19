@@ -232,6 +232,10 @@ if __name__=='__main__':
 
      ls=[1,2,3,4,5]
 
+     print('-'*30)
+     print(f'{ls} is ls')
+     print('-'*30)
+
      print('list_index(ls)')
      print(list_index(ls))
 
@@ -249,6 +253,10 @@ if __name__=='__main__':
 
      ls=[[1,2,3],[2,3,4]]
 
+     print('-'*30)
+     print(f'{ls} is ls')
+     print('-'*30)
+
      print('embedded_list_index(ls)')
      print(embedded_list_index(ls))
      
@@ -258,15 +266,27 @@ if __name__=='__main__':
 
      js={'this':{'that':1}}
 
+     print('-'*30)
+     print(f'{js} is js')
+     print('-'*30)
+
      print('dict_index_brackets(js) with element present')
      print(dict_index_brackets(js))
 
      js={'this':{'notThat':1}}
 
+     print('-'*30)
+     print(f'{js} is js')
+     print('-'*30)
+
      print('dict_index_brackets(js) with no element present')
      print(dict_index_brackets(js))
 
      js={'this':{'that':1}}
+
+     print('-'*30)
+     print(f'{js} is js')
+     print('-'*30)
 
      print('dict_index_getitem(js)')
      print(dict_index_getitem(js))
@@ -285,7 +305,15 @@ if __name__=='__main__':
 
             return self.ls
 
+        def __repr__(self):
+
+            return f'ListObject({self.ls})'
+
      obj=ListObject()
+
+     print('-'*30)
+     print(f'{obj} is obj')
+     print('-'*30)
 
      print('object_index_getitem(obj)')
      print(object_index_getitem(obj))

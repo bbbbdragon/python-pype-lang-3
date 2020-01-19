@@ -12,9 +12,8 @@ from copy import deepcopy
 from pype3.numpy_helpers import *
 
 '''
-Basic tutorial that covers maps.
+Basic tutorial that covers filters.
 '''
-
 
 ###########
 # FILTERS #

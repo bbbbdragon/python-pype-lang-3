@@ -137,7 +137,9 @@ In addition, there is an example of a Docker container, described in `examples/s
 
 # FAQ
 
-* "Is Pype Fast" Pype runs as fast as regular Python, because it is.  But also, ask yourself something - you're using Python.  You're not programming microprocessors for toasters in C.  Does it really matter if your program runs in 3 seconds instead of 2?
+* "Is Pype Fast" 
+
+Pype runs as fast as regular Python, because it is.  But also, ask yourself something - you're using Python.  You're not programming microprocessors for toasters in C.  Does it really matter if your program runs in 3 seconds instead of 2?
 
 * "What's wrong with LISP?  What's wrong with Clojure?  What's wrong with Haskell?"
 

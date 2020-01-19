@@ -1,7 +1,7 @@
 '''
 python3 functional.py 
 
-python3 watch_file.py -p2 python3 functional.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 maps.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
 from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp
@@ -27,9 +27,21 @@ def add(x,y):
     )
 
 
-#########
-#  MAPS #
-#########
+def add2(n):
+
+    (_+2,
+    )
+
+
+def mult100(n):
+
+    (_*100,
+    )
+
+
+########
+# MAPS #
+########
 
 def map_add_1(obj):
     '''
@@ -68,6 +80,21 @@ def embedded_map_add_2(obj,y):
     ([[(add,_,y)]],
     )
     
+
+###########################
+# MAPS FOR FUNCTION CALLS #
+###########################
+
+def function_map(functions,n):
+    '''
+    This function shows that we can map through lists of functions or dicts
+    with funcitons as values, and apply these functions to another element.
+
+    We do this by building a lambda with a mirror as its first element.
+    '''
+    ([(_,n)],
+    )
+
 
 pypeify_namespace(globals())
 
@@ -168,3 +195,25 @@ if __name__=='__main__':
 
     print('embedded_map_add_2(obj,2)')
     print(embedded_map_add_2(obj,2))
+
+    print('*'*30)
+    print('function maps')
+    print('*'*30)
+
+    functions=[add1,add2,mult100]
+
+    print('-'*30)
+    print(f'{functions} is functions')
+    print('-'*30)
+
+    print('function_map(functions,5)')
+    print(function_map(functions,5))
+
+    functions={'add1':add1,'add2':add2,'mult100':mult100}
+
+    print('-'*30)
+    print(f'{functions} is functions')
+    print('-'*30)
+
+    print('function_map(functions,5)')
+    print(function_map(functions,5))

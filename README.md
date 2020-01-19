@@ -511,6 +511,12 @@ f1(Obj(1)) <=> 2
 ```
 Or when it is in the first position of a lambda:
 ```
+def f1(obj):
+
+    ((_.add,2),
+    )
+
+
 class Obj:
   def __init__(self,val):
     self.val=val
@@ -519,10 +525,7 @@ class Obj:
   def add(x):
     return self.val + x
     
-o=Obj(1)
-
-pype( o,
-      (_.add,2)) => 3 
+f1(Obj(1)) <=> 3
 ```
 
 ## Maps
@@ -532,8 +535,19 @@ pype( o,
 Maps apply apply the fArg to each element in the accum if it is a list, tuple, or other type of sequence, or each value of the accum if it is a dictionary or other type of mapping.
 
 ```
-pype([1,2,3],[add1]) <=> [pype(1,add1),pype(2,add1),pype(3,add1)] <=> [add1(1),add1(2),add1(3)] <=> [2,3,4]
-pype({3:1,4:2,5:3},[add1]) <=> {3:pype(1,add1),4:pype(2,add1),5:pype(3,add1)} <=> {3:add1(1),4:add1(2),5:add1(3)} <=> {3:2,4:3,5:4}
+def add1(n):
+    
+    (_+1,
+    )
+
+def f1(ls):
+
+    ([add1],
+    )
+
+f1([1,2,3]) <=> [add1(1),add1(2),add1(3)] <=> [2,3,4]
+
+f1({3:1,4:2,5:3},[add1]) <=> {3:add1(1),4:add1(2),5:add1(3)} <=> {3:2,4:3,5:4}
 ```
 If you would like to apply a mapping to both the keys and values, you can use the helper function `dct_items` in `pype.helpers`, which gets the items of a dictionary:
 ```

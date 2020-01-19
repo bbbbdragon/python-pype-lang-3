@@ -220,7 +220,8 @@ This will crawl through the module looking for any function that has a tuple as 
 
 fArgs are the following:
 
-* any native Python expression
+* any Python variable name
+* any Python literal
 * mirrors - an identity function which returns the accum.
 * indices - notation to access elements of iterables.
 * maps - Appyling an fArg to each element of an iterable.
@@ -235,6 +236,11 @@ fArgs are the following:
 
 In addition, there are two types of objects, Getter and PypeVal.  These override most operators so that they can be converted into fArgs.  In the latest versions of this, you will not need to worry about these objects, since the compiler takes care of them.
 
+# Pype tuples and accums
+
+A pype tuple is a tuple at the end of a pype function.  This tuple contains fArgs, which perform transforms on the accum.  If the first element of the pype tuple is a native Python expression - a variable name, etc. - then this the accum for the second element of the pype tup;e.  If the first element of the tuple is an fArg, then the accum is the first argument of the function.  
+
+After the first element, the accum is the evaluation returned from the previous element.   
 # fArgs
 
 Here we define the fArgs according to a grammar.  We use the following notation:
@@ -325,7 +331,7 @@ def pow2(x): return x**2
 
 def f1(n):
 
-    ((sm,(mult,_,2),(sm,pow2,_+3),
+    ((sm,(mult,_,2),(sm,pow2,_+3)),
     )
 
 f1(2) <=> sm(mult(2,2),sm(pow2(2),2+3)) <=> sm(4,sm(4,5)) <=> 13
@@ -335,19 +341,189 @@ f1(2) <=> sm(mult(2,2),sm(pow2(2),2+3)) <=> sm(4,sm(4,5)) <=> 13
 
 `<_0|_1|_2|_3|_4|_last>`
 
-If an index arg is defined as `_n`, we access the n-th element of the accum.  The accum must be a list, tuple, or other type of sequence.  n only goes up to 4, and must be explicitly imported:
+If an index arg is defined as `_n`, we access the n-th element of the accum.  The accum must be a list, tuple, or other type of sequence.  n only goes up to 9, and must be explicitly imported:
 ```
 from pype import pype,_0
 
-pype([1,2,3,4,5],_0) <=> [1,2,3,4,5][0] <=> 1
+def f(ls):
+
+    (_0,
+    )
+
+f([1,2,3,4,5],_0) <=> [1,2,3,4,5][0] <=> 1
 ```
 The `_last` index arg accesses the last element of the sequence:
 ```
-pype([1,2,3,4,5],_last)
+def f(ls):
+
+    (_0,
+    )
+
+f([1,2,3,4,5],_0) <=> [1,2,3,4,5][-1] <=> 5
 ```
-Index Args are instances of the `Getter` object, which will be relevant in our discussion of object lambdas, indexes, and xendis.
 
 Currently, pype does not allow you to create your own index-arg, and should just be used as a shorthand for often-used list and tuple access expressions.
+
+## Indices
+
+`idx=[<<expression|fArg>+]|.expression|fArg>`
+`_idx`
+
+These take a sequence (a list, set or numpy array) or a mapping (dictionary)  as an accum.  If the accum is a sequence, then each `<expression|fArg>` must evaluate to an integer.  If the accum is a mapping, it must evaluate to a key of the mapping:
+```
+def f1(ls):
+    
+    (_[0],
+    )
+
+f1([1,2,3,4]) <=> [1,2,3,4][0] <=> 1
+
+def f2(js):
+
+    (_['a'],
+    )
+
+f2({'a':2,'b;:4}) <=> 2
+```
+If there are multiple `[<expression|fArg>]`, or if there are multiple bracketed indices, then we evaluate them one at a time:
+``
+def f1(ls):
+    
+    (_[0,1],
+    )
+
+
+f1([[1,2,3],[4,5,6]]) <=> [[1,2,3],[4,5,6]][0][1] <=> 2
+
+def f2(ls):
+    
+    (_[0][1],
+    )
+
+f2([[1,2,3],[4,5,6]]) <=> [[1,2,3],[4,5,6]][0][1] <=> 2
+```
+If the indexed object is a dictionary and the key is not in the dictionary, the expression evaluates as False.  Similarly,
+if the indexed object is a list and the index is too high for the list, the expression evaluates as False.  This imitates Clojure's returning nil when an indexed element is not found in a container:
+```
+def f1(ls):
+
+    (_[3,1],
+    )
+
+f1([[1,2,3],[4,5,6]]) <=> [[1,2,3],[4,5,6]][3][1] <=> False
+
+def f2(js):
+
+    (_['c'],
+    )
+
+f2({'a':1,'b':2'}) <=> {'a':1,'b':2'}['c'] <=> False 
+```
+Splices are also available:
+```
+def f1(ls):
+   
+   (_[:2],
+   )
+
+f1([0,1,2,3]) <=> [0,1,2,3][:2] <=> [0,1]
+```
+And, fArgs are permitted as arguments to the index as well:
+```
+def f1(ls):
+
+    (_[len - 1],
+    )
+
+f1([1,2,3,4]) <=> 
+lenf=PypeVal(len) ls[len(ls) - 1] <=> ls[4 - 1] <=> ls[3] <=> 4
+```
+You can also use dot notation for more legibility:
+```
+def f1(js):
+
+    (_.a,
+    )
+
+f1({'a':1,'b':2}) <=> {'a':1,'b':2}['a'] <=> 1
+
+def f2(js):
+
+    (_.a.b,
+    )
+
+f2({'a':{'b':1,'c':2},'d':2}) <=> {'a':{'b':1,'c':2},'d':2}['a']['b'] <=> {'b':1,'c':2}['b'] <=> 1
+```
+Also note that indexing is used to access fields of objects:
+```
+def f1(obj):
+
+    (_.val,
+    )
+
+class Obj:
+  def __init__(self,val):
+    self.val=val
+    
+f1(Obj(1)) <=> Obj(1).val <=> 1
+```
+### Indices and Callables
+When the index returns a callable, there are two possibilities.  If the index is the first fArg of a lambda, then the callable is called on the arguments of a lambda:
+```
+def f1(funcs):
+
+    ((_.sum,1,2),
+    )
+
+
+f1({'sum':sum,'add1':add1}) <=> {'sum':sum,'add1':add1}['sum'](1,2) <=> sum(1,2) <=> 3
+```
+If the index is not the first fArg of a lambda, the callable will be evaluated on the accum:
+```
+def add_to_a(dct):
+   dct['a']+=1
+   return dct
+
+def f1(d):
+
+    (_.add_to_a,
+    )
+ 
+
+d={'add_to_a':add_to_a,'a':1,'b':2}
+
+f1(d) <=> d['add_to_a'](d) <=> {'add_to_a':add_to_a,'a':2,'b':2}
+```
+This functionality is useful you want to call an object method, and this object method is not in the first position of the lambda, the method gets called on the accum:
+```
+def f1(obj):
+
+    (_.add1,
+    )
+
+class Obj:
+  def __init__(self,val):
+    self.val=val
+  def add1():
+    return self.val+1
+
+f1(Obj(1)) <=> 2
+```
+Or when it is in the first position of a lambda:
+```
+class Obj:
+  def __init__(self,val):
+    self.val=val
+  def add1():
+    return self.val+1
+  def add(x):
+    return self.val + x
+    
+o=Obj(1)
+
+pype( o,
+      (_.add,2)) => 3 
+```
 
 ## Maps
 
@@ -408,118 +584,6 @@ pype(ls,{gt1},{eq0}) <=> [el for el in ls if gt1(el) or eq0(el0)] <=> [el for el
 Note that when there is only one fArg, the expression is equivalent to an AND filter.
 
 
-## Indices
-
-`idx=[<<expression|fArg>+]|.expression|fArg>`
-`_idx`
-
-Or indices if you want to be a snob about it.  These take a sequence or a mapping as an accum.  If the accum is a sequence, then each `<expression|fArg>` must evaluate to an integer.  If the accum is a mapping, it must evaluate to a key of the mapping:
-```
-ls=[1,2,3,4]
-pype(ls,_[0]) <=> ls[0] <=> 1
-dct={1:2,3:4}
-pype(dct,_[3]) <=> dct[3] <=> 4
-```
-If there are multiple `[<expression|fArg>]`, then we evaluate them one at a time:
-```
-ls=[[1,2,3],[4,5,6]]
-pype(ls,_[0,1])) <=> ls[0][1] <=> 2
-```
-If the indexed object is a dictionary and the key is not in the dictionary, the expression evaluates as False.  Similarly,
-if the indexed object is a list and the index is too high for the list, the expression evaluates as False.  This imitates Clojure's returning nil when an indexed element is not found in a container:
-```
-ls=[[1,2,3],[4,5,6]]
-pype(ls,_[3,1])) <=> ls[3][1] <=> False
-```
-```
-dct={1:2,3:{4:5}}
-pype(dct,_[3,4])) <=> dct[3][4] <=> 5
-pype(dct,_[3,6])) <=> dct[3][6] <=> False
-```
-Splices are also available, although they do not evaluate as indexes:
-```
-ls=[0,1,2,3]
-pype(ls,_[:2]) <=> [0,1]
-```
-And, fArgs are permitted as well:
-```
-from pype.vals import PypeVal
-
-lenf=PypeVal(len)
-ls=[1,2,3,4]
-pype(ls,_[lenf - 1]) <=> ls[len(ls) - 1] <=> ls[4 - 1] <=> ls[3]
-```
-You can also use dot notation for more legibility:
-```
-d={'a':1,'b':2}
-
-pype(d,_.a) => 1
-pype(d,_.b) => 2
-```
-Also note that indexing is used to access fields of objects:
-```
-class Obj:
-  def __init__(self,val):
-    self.val=val
-    
-o=Obj(1)
-
-pype( o,
-      _.val) => 1 
-```
-### Indices and Callables
-When the index returns a callable, there are two possibilities.  If the index is the first element of a lambda expression, then the callable is called on the arguments of a lambda:
-```
-funcs={'sum':sum,'add1':add1}
-
-pype( funcs,
-      (_.sum,1,2)) => 3 
-```
-If the index is anywhere else, the callable will be evaluated on the accum:
-```
-def add_to_a(dct):
-   dct['a']+=1
-   return dct
-   
-d={'sum':sum,'add_to_a':add_to_a,'a':1,'b':2}
-
-pype( d,
-      (_.sum,ep(_.add_to_a,_.a),_.b)) => 4
-```
-This functionality is useful when you want to call a list of functions on the same data structure:
-```
-funcs=[add1,add2,add3,add4]
-x=1
-pype( funcs,
-      [(_,x)]) => [2,3,4,5] 
-```
-It is also useful when you want to call an object method, and this object method is not in the first position of the lambda, the method gets called on the accum:
-```
-class Obj:
-  def __init__(self,val):
-    self.val=val
-  def add1():
-    return self.val+1
-o=Obj(1)
-
-pype( o,
-      _.add1) => 2 
-```
-Or when it is in the first position of a lambda:
-```
-class Obj:
-  def __init__(self,val):
-    self.val=val
-  def add1():
-    return self.val+1
-  def add(x):
-    return self.val + x
-    
-o=Obj(1)
-
-pype( o,
-      (_.add,2)) => 3 
-```
 ## Switch Dicts
 
 `{<hashFArg|expression>:<fArg|expression>,+,'else':<fArg|expression>}`

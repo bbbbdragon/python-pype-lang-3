@@ -47,6 +47,16 @@ def summation_start_val(ls,startVal):
     )
 
 
+def summation_start_val_filtered(ls,startVal):
+    '''
+    Here, we demonstrate how we can manipulate the iterable and the startVal
+    using fArgs. startVal+len means startVal+len(ls), and {_ > -1} means
+    all elements in the list greater than -1.
+    '''
+    ([(add,),startVal+len,{_ > -1}],
+    )
+
+
 
 pypeify_namespace(globals())
 
@@ -69,6 +79,9 @@ if __name__=='__main__':
     print('summation_start_val(ls,100)')
     print(summation_start_val(ls,100))
 
+    print('summation_start_val_filtered(ls,100)')
+    print(summation_start_val_filtered(ls,100))
+
     print('*'*30)
     print('reduces on dicts')
     print('*'*30)
@@ -85,5 +98,5 @@ if __name__=='__main__':
     print('summation_start_val(js,100)')
     print(summation_start_val(js,100))
 
-    # print('summation_start_val(ls)')
-    # print(summation_start_val(ls,100))
+    print('summation_start_val_filtered(js,100)')
+    print(summation_start_val_filtered(js,100))

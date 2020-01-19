@@ -170,31 +170,68 @@ Theoretically, yes, you can, because fArgs are just native Python, so you could 
 
 # Overview
 
-The main function in pype is called `pype`, and it consists of two sets of parameters, the start value and the fArgs:
+A pype function is a python function ending with a tuple.  Each tuple is an fArg, or an expression which is compiled into Python.  So a typical pype function looks like this:
+```
+def f(a1,a2,a3...):
 
-`def pype(startVal,*fArgs): ...
-`
+    (fArg1,
+     fArg2,
+     fArg3,
+     ...)
+``` 
+You can also include native Python before the tuple:
+```
+def f(a1,a2,a3...):
 
-The start value is the initial value, which we call "accum", and the fArgs are consecutive operations on this value.  So, if we had a function `add1=lambda x: x+1`, we could perform functional composition on the starting value, where `<=>` means "is functionally equivalent to":
+    a1=23
 
-`pype(1,add1,add1,add1) <=> add1(add1(add1(1))) <=> 4`
+    (fArg1,
+     fArg2,
+     fArg3,
+     ...)
+``` 
+The grand strategy of a pype function is to apply successive transformations on the "accum".  An accum is the first argument of the function, or the first element of the tuple if it is a native Python expression.  After the second fArg, accum is the result of the previous evaluation.  So in the case of:  
+```
+def f(a1,a2,a3...):
 
-This is nothing special, and can be implemented with a reduce.  However, it turns out that an fArg can be a wide range of expressions, as long as they are syntactic Python3 according to the interpreter.  I was able to implement the following types of operations:
+    (fArg1,
+     fArg2,
+     fArg3,
+     ...)
+```
+a1 is the accum, and fArg1 is applied to a1, but if:
+```
+def f(a1,a2,a3...):
 
+    (a2,
+     fArg2,
+     fArg3,
+     ...)
+```
+then a2 is the accum, and fArg2 is applied to it.
+
+After you have finished defining all your functions, you must include this in the module:
+```
+pypeify_namespace(globals())
+```
+This will crawl through the module looking for any function that has a tuple as its final expression.  Using Abstract Syntax Trees (AST's), it will compile the fArgs in the tuple into native Python.
+
+fArgs are the following:
+
+* any native Python expression
 * mirrors - an identity function which returns the accum.
-* index args - when the accum is a sequence, accessing any of the first 4 values of the accum.
+* indices - notation to access elements of iterables.
 * maps - Appyling an fArg to each element of an iterable.
 * reduces - Taking an iterable, which applies an fArg to update an accumulated value.
 * filters - Taking all elements of an iterable which statisfy the conditions.
 * lambdas - A shorthand for applying a function to several bound variables and accumulator-specific expressions.
-* indexes - Accessing values of list and dictionary accums.
 * swtich dicts - Retruns values based on different conditions applied to the accum.
 * dictionary operations - Building dictionaries from the accum, adding key-value pairs, deleting keys from dictionaries.
 * do expressions - For classes with methods that do not return a value, we can run the code and then return the object.
 * list operations - Building lists from the accum, appending items, extending items, concatenation.
 * embedded pypes - Specifying pypes within an fArg.
 
-In addition, there are two types of objects, Getter and PypeVal, which convert basic Python expressions into fArgs, which can then be interpreted by pype.
+In addition, there are two types of objects, Getter and PypeVal.  These override most operators so that they can be converted into fArgs.  In the latest versions of this, you will not need to worry about these objects, since the compiler takes care of them.
 
 # fArgs
 
@@ -208,13 +245,14 @@ Here we define the fArgs according to a grammar.  We use the following notation:
 * `|` means an OR.
 * `<` and `>` bracket an expression, so `<x|y>` means "x or y".
 * `hashFArg` means "an fArg which is hashable (not containing a list or dictionary)".
+* `callableFArg` means either a Python callable or an fArg which evaluates to a python callable.
 * `boolFArg` means "an fArg which is evaluated as a truth value."
 * `hashBoolFArg` is an fArg that is both a `boolFArg` and a `hashFArg`.
 * `accum` refers to the starting value of a pype function, if the fArg is the first, or the result of the last application of the fArg.
 * `expression` refers to a syntactically evaluable Python expression or variable.
 * We refer to lists as `[...]`, tuples as `(...)`, and dictionaries as `{...}`.
 * We refer to fArgs by their names.
-* `<=>` means "functionally equivalent to/gives the same result", so `pype(1,add1) <=> add1(1)` means "`pype(1,add1)` is functionally equivalent to `add1(1)`".
+* `<=>` means "functionally equivalent to/gives the same result".
 
 ## Callables
 
@@ -225,7 +263,12 @@ from pype import pype
 
 add1=lambda x:x+1
 
-pype(1,add1) <=> add1(1) <=> 2
+def f(n):
+
+   (add1,
+   )
+
+f(1) <=> 2
 ~~~~
 
 ## Mirrors
@@ -234,15 +277,57 @@ pype(1,add1) <=> add1(1) <=> 2
 
 A mirror simply refers to the accum passed to the expression.  It must be explicitly imported from pype, since it overrides the `_` placeholder in Python3.  If you would like to use both, you can import `__`, a double-underscore, but I find the single underscore is much cleaner.
 
+If a mirror is in the first element of the main tuple, it refers to the first argument of the function:
+
+~~~~
+from pype import pype,_
+
+def f1(n):
+   
+   (_,
+   )
+
+f1(2) <=> 2
+
+def f2(n,m):
+   
+   (m,
+    _+n,
+   )
+
+f2(2,3) <=> 3
 ~~~~
 
-from pype import pype,_,__
+Mirrors are instances of the `Getter` object, which will be relevant in our discussion of object lambdas and indices.
 
-pype(1,_) <=> 1
-pype(1,__) <=> 1
-~~~~
+## Lambdas 
 
-Mirrors are instances of the `Getter` object, which will be relevant in our discussion of object lambdas, indexes, and xendis.
+`(<callableFArg>,<expression|fArg>,+)`
+
+Lambdas replace the cumbersome syntax of lambdas in Python3.  The first element of a lambda is a callable or another fArg which evaluates to a callable.  The other elements are arguments to this callable.  If these arguments are fArgs, they are evaluated against the accum:
+```
+def sm(x,y): return x+y
+
+def f1(n):
+
+    ((sm,_,3),
+    )
+
+f1(1) <=> sm(1,3) <=> 5
+```
+Because fArgs can be used as arguments to lambdas, they can be very expressive:
+```
+def sm(x,y): return x+y
+def mult(x,y): return x*y
+def pow2(x): return x**2
+
+def f1(n):
+
+    ((sm,(mult,_,2),(sm,pow2,_+3),
+    )
+
+f1(2) <=> sm(mult(2,2),sm(pow2(2),2+3)) <=> sm(4,sm(4,5)) <=> 13
+```
 
 ## Index Arg
 
@@ -320,50 +405,8 @@ pype(ls,{gt1},{eq0}) <=> [el for el in ls if gt1(el) or eq0(el0)] <=> [el for el
 ```
 Note that when there is only one fArg, the expression is equivalent to an AND filter.
 
-## Lambdas 
 
-`(<callable|fArg>,<expression|fArg>,+)`
-
-Lambdas replace the cumbersome syntax of lambdas in Python3.  The first element of a lambda is a callable or an object lambda which returns a callable.  The other elements are arguments to this callable.  If these arguments are fArgs, they are evaluated against the accum:
-```
-sm=lambda x,y:x+y
-pype(1,(sm,_,3)) <=> sm(1,3)
-pype(1,(sm,(sm,_,3),_)) <=> sm(pype(1,(sm,_,3)),pype(1,_)) <=> sm(sm(1,3),1) <=> sm(4,1) <=> 5
-```
-The fact that lambdas can contain other fArgs makes them very expressive.  Imagine if we wanted to take a list, copy it, add 1 to each element of the copy, and concatenate that copy with the original list, and then concatenate that with a list of zeroes which is as long as the original list, and then multiply every element of that list by 3.  Using imperative Python3, this would be:
-```
-from operator import add # we use this instead of the '+' sign
-ls1=[1,2,3,4]
-ls2=[el+1 for el in ls]
-ls3=[0]*len(ls1)
-x=ls1 + ls2 + ls3
-y=[el*3 for el in x]
-```
-Let's do it in pype:
-```
-from operator import mul # the '*' operator
-
-pype([1,2,3,4],
-    (add,_,(add,[add1],(mul,[0],len))),
-	[(mul,3,_)]) 
-```
-It's still a bit unclear, because `add` is binary.  Also, notice that lambdas replicate Polish notation in Lisp - (+ 1 1), etc.  And we can do this quite well with functions in the operator module.  However, `_` is a `Getter` object, and most Python operators, when applied to `Getter` and `PypeVal` objects, will evaluate as lambdas.  This is done by the Python interpreter, so that lambdas are always given as fArgs to the pype:
-```
-_ + 1 <=> (add,_,1)
-pype(3,_ + 1) <=> pype(3,(add,_,1)) <=> 4
-_ * 3 <=> (mul,_,3)
-pype(3, _ * 3) <=> pype(3,(mul,_,3)) <=> 9
-pype([1,2,3],lenf * 3) <=> pype([1,2,3],(mul,len,3)) <=> 9
-```
-So we can rewrite the above as:
-```
-lenf=PypeVal(len)
-
-pype([1,2,3,4],
-      _ + [add1] + [0] * lenf, 
-      [_ * 3])
-```
-## Indexes
+## Indices
 
 `idx=[<<expression|fArg>+]|.expression|fArg>`
 `_idx`
@@ -474,19 +517,6 @@ o=Obj(1)
 
 pype( o,
       (_.add,2)) => 3 
-```
-
-## Xednis
-
-`<sequence|mapping>.[<expression|fArg>+]`
-
-"xedni" is the word "index" spelled backwards.  The first value in the expression is a sequence or mapping, and the remaining `[expression|fArg]` expressions access an element from that value.  Multiple `[expression|fArg]` expressions apply consecutively:
-```
-ls=[1,2,3,4]
-lsV=PypeVal(ls)
-pype([0,3],[lsV[_]]) <=> [ls[0],ls[3]] <=> [1,4]
-ls=[[1,2,3],[4,5,6]]
-pype([0,1],[lsV[_,1]]) <=> [ls[0][1],ls[1][1]] <=> [2,5]
 ```
 ## Switch Dicts
 

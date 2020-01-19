@@ -2,15 +2,16 @@
 
 ## Before you begin reading
 
-You can understand the basic syntactic ideas behind pype in the `tutorial' directory.  To run any script, type the `python3 ...` command in the first docstring.  It is a good idea to tour the language in the following order:
+You can understand the basic syntactic ideas behind pype in the `python-pype-lang-3/tutorial` directory.  To run any script, type the `python3 ...` command in the first docstring.  It is a good idea to tour the language in the following order:
 
 * `mirrors_and_indices.py` - Mirror object, and overloads of arithmetic and Boolean operators, and how to access lists, objects, and dictionaries.
 * `callables_and_lambdas.py` - Regular callables and `lambda` structures, which allow you to place variable names where you want them.
-* `dicts_and_lists.py` - Commonly used JSON manipulations. 
-* `functional.py` - Maps, filters, and reduces.
-* `macros_and_helpers.py` - Helpful macros that you may like.  
+* `maps.py` - Examples of maps for flat and embedded dictionaries and lists.
+* `filters.py` - Examples of filters for flat and embedded dictionaries and lists.
+* `switch_dicts_and_embedded_pypes.py` - Examples of conditionals and embedded pypes.  These two were put into the same category because embedded pypes can define a more sophisticated control flow.
+* `dict_operations.py` - Dictionary/JSON manipulations.
 
-## What and Why?
+## What and why?
 
 In the winter of 2017, I was a run-of-the-mill Python Data-Scientist/Code Monkey/Script Kiddie, rocking pandas, scikit-learn, numpy, and scipy.  I began to get bored of Python's imperative style, especially a particularly nasty anti-pattern that appears across many Python scripts and Jupyter notebooks.  What happens is, I'm applying a whole bunch of operations to a single variable:
 ```
@@ -24,178 +25,35 @@ It was then, on a particular NLP-related project, that I discovered Clojure, and
 
 But I found another dilemna.  If I wanted to use Clojure, I still needed Python's extremely mature libraries, embedded in microservices that the main Clojure app called through HTTP.  So I started to code functionally in Python.  Here's how pype came about.
 
-I realized that a series of transformations on a data structure could be implemented in Python as a reduce, so I could build a function, pype, to take a starting value and apply functions to it in succession:
-```
-from functools import reduce
-
-def pype(accum,*fArgs):
-
-  return reduce(lambda accum,f:f(accum),fArgs)
-  
-add1=lambda x: x+1
-mult5=lambda x:x*5
-pype(2,add1,mult5)
-15
-```
-Then, I realized I could do manipulations of dictionaries and lists, so long as I defined the arguments as lambdas.  Let's say I had the following list:
-```
-ls=[{"name":"bob","age":32},{"name":"susan","age":25},{"name":"joe","age":23},{"name":"mike","age":23}]
-```
-Let's say I wanted to build a dictionary whose keys were ages rounded down to 10 and whose values were lists of names - in other words, who was in their twenties, thrities, etc.  This would look like `{30:["bob"],20:["susan","joe","mike"]}`.  In imperative Python, using defaultdict I could do this as:
+To make a long story short, let's say I wanted to implement the following code to find out which age demographic each user was:
 ```
 from collections import defaultdict
 
-aggregation=defaultdict(lambda:list())
+ages=[{"name":"bob","age":32},{"name":"susan","age":25},{"name":"joe","age":23},{"name":"mike","age":43}]
 
-for js in ls:
+agesDct=defaultdict(lambda:list())
+agesNames={20:'twenty-somethings',30:'thirty-somethings',40:'fourty-somethings'}
 
-  age,name=js['age'],js['name']
-  roundedTo10=int(age/10)
-  aggregation[roundedTo10].append(name)
-```
-Using the original pype function, it would be:
-```
-from functools import reduce
+for js in ages:
 
-def add_to_ls_dct(dct,js):
+    name=js['name']
+    age=js['age']
+    decade=int(age/10)
+    ageName=agesNames[decate]
+    agesDct[ageName].append(name)
+```
+Here is how you'd write this in pype:
+```
+def group_demographic(ages,agesNames):
 
-  age,name=js['age'],js['name']
-  
-  dct[age].append(name)
-  
-  return dct
-
-
-pype( ls,
-      lambda ls:[{*js,'age':int(js['age']/10)} for js in ls],
-      lambda ls:reduce(add_to_ls_dct,ls,{}),
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
+    ([tup(ep(_.age, # Get the 'age' value.
+             _/10, # divide by 10.
+             int, # floor-divide.
+             agesNames[_]), # Get the demographic name.
+          _.name)], # Iterate through each dict, create a tuple.
+     tup_ls_dct, # Create a dictionary with names belonging to each demographic.
+    )
 ```
-Now, we are starting to get functional, but we are not quite at pype yet.  First, I'm noticing that the first expression is a map over every JSON in ls.  So, I could write a function called round_age:
-```
-from functools import reduce
-
-...
-
-def round_age(js):
-
-  js['age']=int(js['age']/10)
-  
-  return js
-  
-
-pype( ls,
-      lambda ls:[round_age(js) for js in ls],
-      lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
-```
-But at this point, the Python notation on the lambda was just a bit too verbose.  So I told the pype function that, whenever it saw a function in square brackets, it would apply that function to every element of the previous iterable structure:
-```
-pype( ls,
-      [round_age],
-      lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
-      lambda dct:{k:v['name'] for (k,v) in dct.items()}
-     )
-```
-But wait, why did round_age have to be its own function?  Maybe I could automate the dictionary alteration, by using something similar to Clojure's assoc.  So I built an expression called _assoc, which would associate a key in the dictionary to a value:
-```
-from pype import _assoc as _a
-
-js={"name":"bob"}
-
-pype(js,
-     _a('age',42)) => {"name":"bob","age":42})
-```
-This _assoc takes the dictionary and adds a key-value pair into that dictionary.  If the key is already in the dictionary, the value is overwritten with the new vale.  So let's re-define round_age to only do the calculation:
-```
-def round_age(js):
-
-  return int(js['age']/10)
- 
-pype( ls,
-      [_a('age',round_age)],
-      lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
-      lambda dct:{k:v['name'] for (k,v) in dct.items()}
-     )
-```
-round_age applies to every JSON in ls.  But what if we just wanted round_age to take an integer as a value?  We'd need a notation to access a value of the JSON by key:
-```
-def round_age(age):
-
-  return int(age/10)
- 
-pype( ls,
-      [a('age',(round_age,_.age))],
-      lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
-```
-Now, the expression a('age',(round_age,_.age)) says, "extract the 'age' value from the JSON, evaluate round_age on it, and assign the resulting value to 'age' in the JSON.  But wait, why even enclose the numerical computation in a function?  Could we just specify it in this new language?
-```
-pype( ls,
-      [a('age',(int,_.age/10))],
-      lambda ls:reduce(add_to_ls_dct,ls,defaultdict(lambda:list())),
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
-```
-We have overridden the / operator to produce an expression which is interpretable by pype.  So we have pypified the map entirely.  Let's move onto the reduce.  We want to build a dictionary which aggregates every user by the decade of their age.  First, we define a function to perform the reduce on a defaultdict: 
-```
-def add_age_to_dct(dct,js):
-
-  dct[js['age']].append(js['name'])
-  
-  return dct
-  
-pype( ls,
-      [a('age',(int,_.age/10)],
-      [(add_age_to_dct,),defaultdict(lambda:list())],
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
-```
-[(add_to_ls_dct,),defaultdict(lambda:list()] means, we iterate over the jsons, and build a dictionary using add_to_ls_dct.  Because the dictionary is a defaultdict, it will automatically add a list to a key that hasn't been inserted yet.  Luckily, however, I've written a library of helpers for these aggregation operations, merge_ls_dct_no_key.  This deletes a key from the JSON, and uses that value as a key in the new dictionary:
-```
-from pype.helpers import merge_ls_dct_no_key
-
-pype( ls,
-      [a('age',(int,_.age/10))],
-      (merge_ls_dct_no_key,_,'age'),
-      lambda dct:{k:[js['name'] for js in v] for (k,v) in dct.items()}
-     )
-```
-_ refers to the previous value, and is sort of an "identity function", or placeholder for merge_ls_dct_no_key, since this function takes two arguments.
-
-In the final step, we want to iterate through every JSON in the list values, and extract the 'name' value.  We can do this by running another map.  When a map runs on a dictionary we apply the expression to the values.  For clarity, we could use the build_pype function to loop through the list and extract the name value from the JSON:
-```
-from pype.helpers import merge_ls_dct_no_key
-from pype import build_pype as bp
-
-names=bp([_['name']])
-
-pype( ls,
-      [a('age',(int,_.age/10))],
-      (merge_ls_dct_no_key,_,'age'),
-      [names]
-     )
-```
-In [_['name']], the enclosing square brackets mean "go through the list and apply the enclosing expression".  We know that this is a list of JSON's, each with a 'name' field, so we extract that field using _['name'].  However, I've recently gotten rid of the AND filter, so now you can use [[]] to iterate through lists embedded in dictionaries:
-```
-pype( ls,
-      [_a('age',(int,_['age']/10))],
-      (merge_ls_dct_no_key,_,'age'),
-      [[_['name']]]
-     )
-```
-Or if you really wanted to get crazy:
-```
-pype( ls,
-      (merge_ls_dct_no_key,[_a('age',(int,_['age']/10)],'age'),
-      [[_['name']]]
-     )
-```
-It was this process that turned pype from a simple reduce function into something much more expressive.
-
 You may say this is "syntactic sugar".  I hate the expression "syntactic sugar".  Sugar is something you don't need.  Sugar rots your teeth.  Sugar makes you a diabetic.  You sprinkle sugar in your tea at the weekly Princeton University English Department faculty meeting, listening politely to the Dean's passive-aggressive comments about your latest novel.  The metaphor seemed to imply that more concise ways of expressing an idea were bad for you, that if you aren't thinking in terms of "for(int i=0; i <= LENGTH; i++){ ...", you aren't a real programmer.  Here's a little secret - to every programmer, every other programmer is not a real programmer.  We need, collectively, to get over it.
 
 I didn't want "syntactic sugar".  Sugar doesn't change things deeply, make you see things differently.  No, I wanted "syntactic plutonium".    
@@ -241,13 +99,20 @@ To re-install, you may need to remove the `egg-link` file in your `dist-packages
 ```
 rm /usr/local/lib/python3.6/dist-packages/pype.egg-link 
 ```
-Now you are ready to test pype in Python3:
+Now you are ready to test pype in Python3.  Open a file and input the following:
 ```
->>> from pype import pype
->>> add1=lambda x: x+1
->>> mult2=lambda x: x*2
->>> pype(1,add1,mult2)
-4
+from pype import pypeify_namespace,p,_
+
+def say_hello(myName):
+
+    ('Hello ' + _ ', welcome to pype!',
+    )
+
+pypeify_namespace(globals())
+
+if __name__=='__main__':
+
+   print(say_hello('Bennett'))
 ```
 # Examples
 

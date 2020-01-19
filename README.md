@@ -139,29 +139,24 @@ In addition, there is an example of a Docker container, described in `examples/s
 
 * "Is Pype Fast" Pype runs as fast as regular Python, because it is.  But also, ask yourself something - you're using Python.  You're not programming microprocessors for toasters in C.  Does it really matter if your program runs in 3 seconds instead of 2?
 
-* "Is Pype Turing-Complete?"
-
-Like I really fucking care.  But seriously, CS shouldn't get in the way of programming.
-
 * "What's wrong with LISP?  What's wrong with Clojure?  What's wrong with Haskell?"
 
 Don't get me wrong, I love these languages.  They're awesome.  But ... try to convince an employer to allow you to use these languages.  With pype, you can say you use Python.  
 
 There is a good LISP library in Python called hy, although seems to have some perfomance issues.  Pype will never be Lisp, ever.  To paraphrase the Zefiro Anejo motto, "hasta el repl, es una obra de arte".  Lisp is a work of art.  Lisp is Mozart.  Use it if you can.  Or use pype.
 
-I think there are three main benefits to using pype over these .  First, you have the richness of Python (pandas, numpy, scikit-learn, various Neural Network libraries) at your fingertips, without having to enclose them in microservices. Second, you can embed pype into any python code you want.  Thirdly, I've found that the expressions for maps, reduces, filters, etc. are actually more concise than many LISP or Clojure expressions.
+I think there are three main benefits to using pype over these.  First, you have the richness of Python (pandas, numpy, scikit-learn, various Neural Network libraries) at your fingertips, without having to enclose them in microservices. Second, you can embed pype into any python code you want.  Thirdly, I've found that the expressions for maps, reduces, filters, etc. are actually more concise than many LISP or Clojure expressions.
 
 Why is conciseness valuable?  When you're programing, there's the thought, and there's the code.  Most of programming is going through the mental overhead of translating thought into code.  More verbose languages require more overhead.  But the problem is, you think more slowly, because you try a new idea, translate/implement, try another idea, translate/implement, until you get to the right idea and the right implementation.  And, half the time, your thinking is wrong.  
 
-Because of the implementation's succinctness, debugging pype reduces to two problems - getting the syntax right and getting the thought right.  In other words, it's the difference between thinking for 15 minutes and coding for 18 hours or coding for 30 minutes and thinking for 24 hours.  Or you can program C++ at an investment bank.  It's your life.    
+Because of the implementation's succinctness, debugging pype reduces to two problems - getting the syntax right and getting the thought right.  In other words, it's the difference between thinking for 15 minutes and coding for 18 hours or coding for 30 minutes and thinking for 24 hours.  
 
 * "Is pype readable?"
 
 One way I evaluate a coding style is to write a piece of code and then revisit it several weeks later.  How easy is it to figure out what you're doing?  With C++ or Java, forget it.  I notice when I come back to something written in pype, there's very little overhead trying to re-understand something.
 
-Maybe other developers will complain about your using pype, but don't take it personally.  Office developers take about as much interest in one anothers' code as 3-year-olds take in one anothers' fingerpainting.  Besides, if they can't understand what a map, reduce, or filter is, should they really be developing?  You'll get your work done 10x faster, anyway, so the bosses will love you - or fire you for being too productive.
+Ask this question for yourself after having done a few projects.  For me, it was yes.
 
-But this isn't an advertisement.  I genuinely do not care if you use pype or not - it works for me, not so well for others.  And, in huge amounts, the hyper-concise notation can get you lost.  See below on how to make your code maintainable.  
 
 * "Can I build microservices in pype?"
 

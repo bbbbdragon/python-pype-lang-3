@@ -242,6 +242,7 @@ After the first element, the accum is the evaluation returned from the previous 
 
 Here we define the fArgs according to a grammar.  We use the following notation:
 
+* `varName` is any legitimate Python variable name.
 * `fArg` is any fArg specified below.
 * `fArg,+` means "one or more fArgs, seperated by commas".
 * `fArg,*` means "zero or more fArgs, seperated by commas".
@@ -891,13 +892,62 @@ f1([1,2,3,4,5,6]) <=> {"number of items greater than 3": 3, "number of itemsless
 This allows you to declare variables inside a pype tuple.  The benefit of this is that once this variable is declared, you can reference it anywhere below in the tuple.  Let's say, for example, that you wanted to use a dict build to declare a few variables:
 ```
 def f1(n):
-  
+
+    ({'x':_+2,
+      'y':_*4,
+      'z':_*2},
+      _.x+_.y+_.z,
+    )
+
+f1(2) <=> 4 + 8 + 4 <=> 16
 ```
+So far, so good.  Now, let's say we wanted to use an ep to add a new value, 'k':
+```
+def f1(n):
+
+    ({'x':_+2,
+      'y':_*4,
+      'z':_*2},
+      a('k',ep(_.x,_+1,_+1)),
+    )
+```
+Fine, but what happens if we want to multiply the last value in the ep by 'z'?  We just can't do this, because ep can only see 'x' as an accum.  Here is how we would solve this problem:
+```
+def f1(n):
+
+    (z << _*2,
+     {'x':_+2,
+      'y':_*4,
+      'z':z},
+      a('k',ep(_.x,_+1,_+1,_*z)),
+    )
+
+```
+When we assign a variable, the accum in the next expression is not changed at all.  All this means is that when we refer to this symbol further down in the pype tuple, we have already evaluated it.
+
 ## Closures
-`cl(<fArg|expression>,+)|cl(<fArg|expression>,+)`
+`cl(<fArg|expression>,+)|cl([varName,varName,*],<fArg|expression>,+)`
 
-These are not completely implemented yet, so I must defer for a bit.
+A closure is a way of defining a function within pype code.  It is most frequently used with a lambda.  The first type of closure assumes a single argument, and looks like this:
+```
+def f1(n):
 
+    (f << cl(add1,add1,add1), # f applies add1 3 times to the argument.
+     (f,_), # f(n) <=> add1(add1(add1(n)))   
+    )
+```
+I am still working on this, but from what I can tell, this can be used to build pype functions from other pype functions.
+
+The second type of closure takes a list of arguments of varNames, followed by fArgs.  These do not need to be declared previously - they are the parameters of the closure.  Inside the closure, _ in the first fArg will stand in for the first parameter.
+```
+def f1(n):
+
+    (f << cl([x,y], # the closure has an x and y as parameters.
+             (sm,_,y), # sm(x,y)
+             _+1), # sm(x,y)+1
+     (f,_,2), # sm(n,2)+1
+    )        
+```
 ## Pype Helpers
 
 `pype.helpers` is a module containing many helpful operations on lists and dictionaries.  We have already seen `dct_values` and `tup_dct`, but there are several others that are useful, only a few of which we will cover here (most of the functions are one-liners, so you can just browse the code to learn all of them).

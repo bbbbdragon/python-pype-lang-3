@@ -641,6 +641,7 @@ f1(2) <=> 'two'
 f1(3) <=> 'no idea'
 ```
 Because Python3.7 orders dictionary keys by insertion, if there are more than one key fArgs which evaluate as True, then the evaluated fArg value for the first key is returned:
+```
 def f1(n):
 
     ({_ > 1:'greater than one',

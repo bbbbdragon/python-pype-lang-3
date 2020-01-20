@@ -134,8 +134,6 @@ def ifp_example(n):
     )
 
 
-
-
 pypeify_namespace(globals())
 
 if __name__=='__main__':

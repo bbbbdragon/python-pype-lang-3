@@ -867,81 +867,27 @@ f1({'a':1,'b':2,'c':3}) <=> {'c':3}
 
 
 ## Embedded Pype
-`_p(fArg,+)`
+`ep(fArg,+)`
 
 This embeds a pype expression in an fArg.  The accum passed to the embedding fArg is also passed to the embedded pype:
 ```
-from pype import _p as ep
+from pype import ep
 
-pype([1,2,3,4,5,6],{"number greater than 3":ep({_ > 3},len), "number less than three":ep({_ < 3},len])})
-<=> {"number greater than 3": 3, "number less than 3": 2}
+def f1(ls):
+
+    ({"number of items greater than 3":ep({_ > 3},
+                                          len), 
+      "numbers of items less than three":ep({_ < 3},
+                                            len)},
+    )
+
+f1([1,2,3,4,5,6]) <=> {"number of items greater than 3": 3, "number of itemsless than 3": 2}
 ```
 
 ## Quotes
 `Quote(<fArg|expression>)`
 
-Sometimes you may have functions that take other functions as arguments.  Lets say you had:
-```
-def add1(x):
-  return x+1
-  
-def apply_func(ls,f):
-  return [f(el) for el in ls]
-```
-There is a problem with the following statement:
-```
-pype( ls,
-      (apply_func,_,add1))
-```
-`add1` would be applied to ls, rather than being passed as an argument to `apply_func` as it should.  To fix this, we enclose it in a Quote object:
-```
-from pype.vals import Quote as q
-pype( ls,
-      (apply_func,_,q(add1)))
-```
-Ideally, I would like Quote to work on any fArg, so that we could do things like dynamic code injections - getting into LISP macro territory.
-# Other Features
-
-## PypeVals
-
-You have noticed expressions such as `_ > 3` can appear in strange places, such as keys for dictionaries.  That is because pype overrides the operators and translates this expression into a data structure called a LamTup, which can then be evaluated as an fArg. To do this, however, at least one element in the expression must be a PypeVal.  `_` is a PypeVal, for instance, as is `_0`, as are many other things.  A PypeVal overrides most of the operators for expressions and then generates a LamTup, which the interpreter evaluates.  So that means that an expression must have a PypeVal in it for this to happen.  You can convert variables into PypeVals by simply declaring a PypeVal instance around them:
-```
-from pype.vals import PypeVal as v
-
-lists=[[1,2,3,4],
-       [4,5,6],
-       [2,3],
-       [1,2,3,4,5,6,7,8,9]]
-
-pype(lists,{v(len) > 3}) 
-<=> [[1,2,3,4],
-     [4,5,6],
-     [1,2,3,4,5,6,7,8,9]]
-```
-By the way, this use of `len` as a PypeVal is so common that it is included in `pype.vals` as `lenf`.
-
-The only unfortunate exception is boolean operators and `in` expressions, which cannot be overriden by Python.  Instead, use the `~` operator for NOT, the `&` operator for AND, the `|` operator for OR, and the `>>` operator for `in`.  Because of operator precedence, you will need to enclose these statements in parentheses, but this is a small inconvenience:
-```
-pype(lists,{(lenf > 3) & (lenf < 5)}) 
-<=> [[1,2,3,4],
-     [4,5,6]]
-```
-## `build_pype`
-
-This builds a callable function from a pype expression.  It is especially useful for embedded maps, as de saw above:
-```
-from pype import build_pype as bp
-
-value_multiply=bp([_['value'],_*10])
-
-dctLS=[{'name':'car','value':2000},
-       {'name':'apple','value':3},
-       {'name':'orange','value':5},
-       {'name':'cherry','value':1}]
-
-pype(dctLS,value_multiply) <=> [20000,30,50,10]
-```
-Right now I am deprecating this feature, as it tends to clutter your code.
+These are not completely implemented yet, so I must defer for a bit.
 
 ## Pype Helpers
 
@@ -980,15 +926,18 @@ The usefulness of these two functions becomes more apparent when we show them wi
 from pype import pype
 from pype.helpers import merge_ls_dct_no_key
 
+def f1(dctLS):
+
+    ((merge_dct_ls,_,'name'),
+     [_['payment']],
+    )
+
 dctLS=[{'name':'bobo','payment':20},
        {'name':'bob','payment':30},
        {'name':'bob','payment':50},
        {'name':'susan','payment':10}]
        
-pype(dctLs,
-     (merge_dct_ls,_,'name'),
-     [_['payment']]) 
-<=> {'bobo':[20],'bob':[30,50],'susan':[10])
+f1(dctLs) <=> {'bobo':[20],'bob':[30,50],'susan':[10])
 ```
 ### `sort_by_key(ls,key,rev=False)`
 
@@ -1014,75 +963,6 @@ ls=[(1,4),(-1,5),(2,3)]
 sort_by_index(ls,0) => [(-1,5),(1,4),(2,3)]
 sort_by_index(ls,1) => [(2,3),(1,4),(-1,5)]
 ```
-# Optimization
-
-Pype is interpreted, which means that a pype call goes through the list of fArgs, identifies the type of fArg it is, and then evaluates this.  You will quickly find that this can be a serious performance bottleneck in long lists or dictionaries.  To address this, I built a decorator, `optimize`, which evaluates pype only once, and then rebuilds the function using abstract syntax trees.  Because these AST's prefer the most optimized Python operations on collections (dict and list comprehensions), this can often lead to a performance boost of 1-2 orders of magnitude.
-
-I would recommend you apply the optimize decorator to all your pype functions - and soon I plan to take out the pype interpreter entirely, as now there are two implementations of pype - the interpreter and the optimizer.    
-
-Currently, `optimize` only runs on the returned pype call in a function:
-
-```
-from pype import pype
-from pype.optimize import optimize
-
-@optimize
-def optimized(ls):
-  return pype(ls,
-              [_+3],
-	      [_*4])
-```
-As of today, optimized pype only covers a subset of fArg types:
-
-* callables
-* mirrors
-* index args
-* filters
-* lambdas
-* indices
-* maps
-* reduces
-* switch dicts
-* dict assocs
-* dict dissocs
-* dict merges
-* list builds
-* dict builds
-* do expressions
-* embedded pypes
-* quotes
-
-The optimizer is a work in progress, so it is best to first ensure your program runs in interpreted pype, and apply the `optimize` decorator to each function, testing along the way.
-
-One nice thing about the optimizer is that you don't have to explicitly declare PypeVals when you want to override operators.  For example, the function:
-```
-import PypeVal as v
-
-def double_len(ls):
-
-  return p( ls,
-            v(len)*2) 
-```
-can be written as:
-```
-@optimize
-def double_len(ls):
-
-  return p( ls,
-            len*2) 
-```
-You will find examples of how this can de-clutter your code in `examples/quicksort.py` and `examples/fibonnaci.py` - for example, one implementation of quicksort contains the following code:
-```
-@optimize
-def qs3_opt(ls):
-    pivot=middle(ls)
-
-    return p( ls,
-              _if(len,(qs3,{_ < pivot}) + [pivot] + (qs3,{_ > pivot}))
-            )
-```
-`(qs3,{_ < pivot}) + [pivot] + (qs3,{_ > pivot})` contains no explicit PypeVal declarations.  We can can see that this gives us an incredible amount of expressive power.
-# Tips for Good Pype
 
 ## Style
 
@@ -1091,28 +971,24 @@ I don't know why, but I always found the traditional writing order of Chinese, f
 from pype import pype as p
 
 def process_list(ls):
- return p(ls,
-          [_+1],
-	  {_ > 2},
-	  len,
-	 )
+  ([_+1],
+   {_ > 2},
+   len,
+  )
 ```
 The real value of this, though, is that debugging is much easier, because all you need to do is put `#` before each line, and evaluate the expression fArg by fArg.
 ```
-from pype import pype as p
-
 def process_list(ls):
- return p(ls,
-          [_+1],
-	  #{_ > 2},
-	  #len,
-	 )
+  ([_+1],
+   # {_ > 2},
+   # len,
+  )
 ```
-By the way, while we are on the topic of Chinese writing - in "The Karate Kid", the scrolls for "rule number 1: use karate for defense only, never for attack" actually read, in Chinese, "kong shou wu xian shou", which means, literally, "empty kand (karate) not first hand" - or, "karate is not the first hand".  So much more eloquent and concise than the English.  A pype programmer is an office drone on the outside, theoretically writing in Python.  But, like a martial arts master, although they humbly go through the world and have infinite patience for the fumblings and bloated code of others, they never provoke, they never antagoinze, but they always leave behind little amounts of virtuous kickassery in a world of wrongness.   
+By the way, while we are on the topic of Chinese writing - in "The Karate Kid", the scrolls for "rule number 1: use karate for defense only, never for attack" actually read, in Chinese, "kong shou wu xian shou", which means, literally, "empty kand (karate) not first hand" - or, "karate is not the first hand".  So much more eloquent and concise than the English.  A pype programmer is an office drone on the outside, theoretically writing in Python.  But, like a martial arts master, although she humbly go through the world and has infinite patience for the fumblings and bloated code of others, she never provokes, she never antagoinzes, but she always leave behind little amounts of virtuous kickassery in a world of wrongness.   
 
-## Feel it? Fuck it ... func it!
+## Feel it? F*ck it ... func it!
 
-By "fuck it" I mean, in the Big Lubowsky sense, "fuck it ...", "don't worry about it".  The contributors of the pype repository do not in any way encourage innappropriate sexual behavior with your own code.  So don't get any ideas, you pathetic dork.  
+By "f*ck it" I mean, in the Big Lubowsky sense, "fuck it ...", "don't worry about it".  The contributors of the pype repository do not in any way encourage innappropriate sexual behavior with your own code.  So don't get any ideas, you pathetic dork.  
 
 Generally, the process of pype programming starts with a large pype expression - in fact, concisely defining program logic is pype's superpower.  As the expression gets longer, you move functionality to other funcitons.  But it's very important to keep each function small, no more than 10-20 lines or so, so you see the entire program logic. 
 
@@ -1125,61 +1001,47 @@ from pype import pype as p
 from pype.val import lenf
 
 def ls_times_itself(ls):
- return p(ls,
- 	  [_+2],
-	  {_ < 4},
-          {'newLen':lenf*2,
-	   'ls':_},
-	  _.ls*_.newLen,
-	 )
+  
+  ([_+2],
+   {_ < 4},
+   {'newLen':lenf*2,
+    'ls':_},
+   _.ls*_.newLen,
+  )
 ```
 Pretty awesome, but be careful - it leads to a lot of bloat.  When you can, define your variables in the function body before the pype expression:
 ```
 from pype import pype as p
 
 def ls_times_itself(ls):
+ 
  sz=len(ls)*2
- return p(ls,
-          [_+2],
-	  {_ < 4},
-	  _*sz,
-         )
+
+ ([_+2],
+  {_ < 4},
+  _*sz,
+ )
 ```
 Much cleaner.
 
 ## Mixing Python and Pype
 The whole point of Pype is to allow you to program functionally while not having to give up Python's awesome libraries.  So when and where you want, mix mix mix.
 
-For hyper-fast numerical processing, I often find writing functions in imperative numpy and then using pype to define the overall program logic is the most effective.  But I'd like to add a module of numpy helpers.
+For hyper-fast numerical processing, I often find writing functions in imperative numpy or numba and then using pype to define the overall program logic is the most effective.  But I also have a module `numpy_helpers.py` which makes this process easier.
 
 ## Loops within loops
-After getting rid of the AND filter, [[]] can now be used to run loops on embedded lists or dictionaries:
+[[]] can now be used to run loops on embedded lists or dictionaries:
 ```
-ls=[[1,2,3,3],[2,2]]
+def f1(ls):
 
-p(ls,[[_+1]]) <=> [[2,3,4,4],[3,3]]
-```
-You can also use `build_pype`, but this actually makes your code quite messy quite fast: 
-```
-from pype import build_pype as bp
+    ([[_+1]],
+    )
 
 ls=[[1,2,3,3],[2,2]]
-add1=bp([_+1])
 
-p(ls,[add1]) <=> [[2,3,4,4],[3,3]]
+f1(ls) <=> [[2,3,4,4],[3,3]]
 ```
-When you are doing two embedded loops, [[]] is fine.  However, after this, I'd recommend enclosing the embedded functionality in a new function or build_pype:
-```
-ls=[[[1,2],[3,3]],[[2,2]]]
 
-pype(ls,[[[_+1]]]) <=> [[[2,3],[4,4]],[[3,3]]]
-```
-Concise but confusing, so you might want to just "feel and func this":
-```
-inner_add1=bp([_+])
-
-pype(ls,[[inner_add1]])
-```
 ## Immutability
 
 Unfortunately, for performance reasons, we cannot ensure immutability.  This is because many of the dictionary operations act on the original dictionary passed to pype, rather than a copy of it.  Unlike the ultra-light lists and dictionaries of Clojure, Python simply cannot remain performant while creating new dictionaries or lists with every expression.  Therefore, if you are going to call pype more than once on the same data structure, you should use a deepcopy to ensure you are working on the same data.
@@ -1201,12 +1063,12 @@ from flask import request, jsonify
 @app.route('/add',methods=['POST'])
 def add():
 
-   return p( request.get_json(force=True),
-             _.numbers,
-	     sum,
-	     db('sum'),
-	     jsonify,
-	   )  
+   (request.get_json(force=True),
+    _.numbers,
+    sum,
+    db('sum'),
+    jsonify,
+   )  
 ```
 Within the scope of the routing function, you're not going to need a lot of immutability anyway.
 # Conclusion

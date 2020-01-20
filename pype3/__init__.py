@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.14'
+__version__='3.0.15'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *

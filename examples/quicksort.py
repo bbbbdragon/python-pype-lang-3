@@ -1,6 +1,11 @@
-from pype2 import p,pypeify_namespace
-from pype2 import _,iff
-from pype2.helpers import middle
+'''
+python3 quicksort.py
+
+python3 watch_file.py -p1 python3 quicksort.py  -d /Users/bennettbullock/python-pype-lang-3
+'''
+from pype3 import p,pypeify_namespace
+from pype3 import _,iff
+from pype3.helpers import middle
 
 def qs0(ls):
     '''
@@ -35,10 +40,10 @@ def qs0(ls):
     '''
     pivot=middle(ls)
 
-    return p( ls,
-              {len:(qs0,{_ < pivot}) + [pivot] + (qs0,{_ > pivot}),
-               'else':_}
-            )
+    (ls,
+     {len:(qs0,{_ < pivot}) + [pivot] + (qs0,{_ > pivot}),
+      'else':_}
+    )
 
 
 def qs1(ls):
@@ -54,41 +59,19 @@ def qs1(ls):
     '''
     pivot=middle(ls)
 
-    return p( ls,
-              iff(len,(qs1,{_ < pivot}) + [pivot] + (qs1,{_ > pivot}))
-            )
-
-
-def qs2(ls):
-    '''
-    Now, we take away the return statement for space.  
-    '''
-    pivot=middle(ls)
-
-    p( ls,
-       iff(len,(qs2,{_ < pivot}) + [pivot] + (qs2,{_ > pivot}))
-     )
-
-
-def qs3(ls):
-    '''
-    And we can also take away the call to p.
-    '''
-    pivot=middle(ls)
-
-    ( ls,
-      iff(len,(qs3,{_ < pivot}) + [pivot] + (qs3,{_ > pivot}))
+    (ls,
+     iff(len,(qs1,{_ < pivot}) + [pivot] + (qs1,{_ > pivot}))
     )
 
 
-def qs4(ls):
+def qs2(ls):
     '''
     And we can even take away the accum.  Notice, however, the final comma, making
     the statement a tuple.  
     '''
     pivot=middle(ls)
 
-    iff(len,(qs4,{_ < pivot}) + [pivot] + (qs4,{_ > pivot})),
+    iff(len,(qs2,{_ < pivot}) + [pivot] + (qs2,{_ > pivot})),
 
 
 '''
@@ -114,11 +97,3 @@ if __name__=='__main__':
     print('*'*30)
     print('running qs2')
     print(qs2(ls))
-
-    print('*'*30)
-    print('running qs3')
-    print(qs3(ls))
-
-    print('*'*30)
-    print('running qs4')
-    print(qs4(ls))

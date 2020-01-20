@@ -1,10 +1,10 @@
 '''
-python3 dict_operations.py 
+python3 dict_and_list_operations.py 
 
-python3 watch_file.py -p2 python3 dict_operations.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 dict_and_list_operations.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
-from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
-from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp,m,change
+from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last,c
+from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp,m,change,app
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
@@ -103,13 +103,51 @@ def dict_build_std(ls):
     )
 
 
+###############
+# LIST BUILDS #
+###############
+
+def simple_ls_build(a,b):
+    '''
+    This demonstrates the list build function tup, which creates a tuple of
+    its arguments.
+    '''
+    (tup(a,b),
+    )
+
+
+def dct_ls_build(js):
+    '''
+    This extracts key-value pairs from a dictionary and builds tuples with
+    transformations on both the key and the pair.
+    '''
+    (dct_items, # Gets a list of key-value tuples.
+     [tup('s'+_0,_1*100)], # Prepend 's' to the key, and multiply value by 100
+    )
+
+
+def append_ls(ls2,el):
+    '''
+    This adds an element to the end of the list.
+    '''
+    (app(el),
+    )
+
+
+def concat_ls(ls1,ls2):
+    '''
+    This concatenates both lists.
+    '''
+    (c(_,ls2),
+    )
+
 
 pypeify_namespace(globals())
 
 if __name__=='__main__':
 
     print('*'*30)
-    print('dict build')
+    print('dict builds')
     print('*'*30)
 
     print('dict_build_simple_1(1)')
@@ -138,3 +176,37 @@ if __name__=='__main__':
 
     print(dict_build_std(ls))
     print(dict_build_std(ls))
+
+    print('*'*30)
+    print('dict builds')
+    print('*'*30)
+
+    print('simple_ls_build(1,2)')
+    print(simple_ls_build(1,2))
+
+    js={'a':1,'b':2,'c':3,'d':4}
+
+    print('-'*30)
+    print(f'{js} is js')
+    print('-'*30)
+
+    print('dct_ls_build(js)')
+    print(dct_ls_build(js))
+
+    ls=ls[:10]
+
+    print('-'*30)
+    print(f'{ls} is ls')
+    print('-'*30)
+
+    print(append_ls(ls,1))
+
+    ls1=[1,2,3,5,3]
+    ls2=[1,2,3,3]
+
+    print('-'*30)
+    print(f'{ls1} is ls1')
+    print(f'{ls2} is ls2')
+    print('-'*30)
+
+    print(concat_ls(ls1,ls2))

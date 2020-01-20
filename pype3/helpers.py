@@ -190,6 +190,13 @@ def dct_assoc(dct,*keyVals):
     return dct
 
 
+def dct_assoc_one(dct,key,val):
+
+    dct[key]=val
+
+    return dct
+
+
 def dct_dissoc(dct,key):
 
     if key in dct:
@@ -742,12 +749,21 @@ def rng(ln):
     return range(ln)
 
 
+def reduce_iterable(iterable):
+
+    return list(iterable.values()) if is_dict(iterable) else iterable
+
+
 def reduce_func(func,iterable):
+
+    iterable=reduce_iterable(iterable)
 
     return reduce(lambda h,x: func(h,x),iterable)
 
 
 def reduce_func_start_val(func,startVal,iterable):
+
+    iterable=reduce_iterable(iterable)
 
     return reduce(lambda h,x: func(h,x),iterable,startVal)
 

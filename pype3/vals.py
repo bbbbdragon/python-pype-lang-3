@@ -2,6 +2,22 @@ from operator import *
 from pype3.type_checking import *
 from pype3.helpers import flatten_tuple
 
+##########
+# ASSIGN #
+##########
+
+class VarAssign(object):
+
+    def __init__(self,assignTo,assignFrom):
+
+        self.assignTo=assignTo
+        self.assignFrom=assignFrom
+
+    
+    def __repr__(self):
+
+        return f'VarAssign(assignTo={self.assignTo},assignFrom={self.assignFrom})'
+
 
 class LamTup(object):
     '''
@@ -16,9 +32,11 @@ class LamTup(object):
 
         self._tup_=tup
 
+
     def __str__(self):
 
         return 'L'+str(self._tup_)
+
 
     def __repr__(self):
 
@@ -186,12 +204,6 @@ class LamTup(object):
 
         return LamTup(xor,self.val(),other)
 
-    '''
-    def __contains__(self,other):
-
-        return LamTup(contains,self.val(),other)
-    '''
-
     def __rshift__(self,other):
 
         return LamTup(contains,other,self.val())
@@ -200,6 +212,15 @@ class LamTup(object):
 
         return LamTup(contains,self.val(),other)
 
+    def __lshift__(self,other):
+
+        return VarAssign(self.val(),other)
+
+    def __rlshift__(self,other):
+
+        return VarAssign(other,self.val())
+
+    
 ###########
 # PYPEVAL #
 ###########
@@ -342,6 +363,7 @@ class Quote(object):
     def __str__(self):
 
         return 'Q('+str(self.v)+')'
+
 
 
 #################

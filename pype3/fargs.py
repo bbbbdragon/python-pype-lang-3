@@ -122,11 +122,11 @@ def is_reduce(fArg):
     # print('*'*30)
     # print('is_reduce')
     # print('{} is fArg'.format(fArg))
-    #print('is list fArg {}'.format(is_list(fArg)))
-    #print('len {}'.format(len(fArg) == 1 or len(fArg) == 2))
-    #print('is tuple {}'.format(is_tuple(fArg[0])))
-    #print('len fArg {}'.format(len(fArg[0]) == 1))
-    #print('is_f_arg {}'.format(is_f_arg(fArg[0][0])))
+    # print('is list fArg {}'.format(is_list(fArg)))
+    # print('len {}'.format(len(fArg) == 1 or len(fArg) == 2))
+    # print('is tuple {}'.format(is_tuple(fArg[0])))
+    # print('len fArg {}'.format(len(fArg[0]) == 1))
+    # print('is_f_arg {}'.format(is_f_arg(fArg[0][0])))
 
     return is_list(fArg) \
         and (len(fArg) >= 1 and len(fArg) <= 3) \

@@ -734,23 +734,26 @@ f1(df) <=> df after we run dropna on it.
 
 ## List Build
 
-`_l(<expression|fArg>,+)`
+`tup(<expression|fArg>,+)`
 
 This creates a new list, eith either an expression or an evaluated fArg:
 ```
-from pype import _l
+from pype import tup
 
-p([1,2],_l(_0+8,_1+10)]) <=> [9,20]
+p([1,2],tup(_0+8,_1+10)) <=> [9,20]
 ```
 These are often used when we want to transform the keys and values of a dictionary, in conjunction with index args, `dct_items` and `tup_dct`, the last of which builds a dictionary from a list of tuples or 2-element lists:
 ```
 from python.helpers import dct_items,tup_dct
 
-pype({1:2,3:4},
-     dct_items,
+def f1(js):
+
+    (dct_items,
      [_l(_0+5,_1+10)],
-     tup_dct) 
-<=> {6:20,8:40}
+     tup_dct,
+    )
+
+f1({1:2,3:4}) <=> {6:20,8:40}
 ```
 
 ## List Append 
@@ -766,67 +769,102 @@ p([1,2],_append(3,4)) <=> [1,2,3,4]
 
 ## List Concat 
 
-`_concat([<expression|fArg>,+])`
+`c([<expression|fArg>,+])`
 
 This concatenates two lists, either expressions or fArgs.
 
 ```
-from pype import _concat
+from pype import concat
 
-p([1,2],_concat(_,[3,4]) <=> [1,2,3,4]
+def f1(ls):
+
+    (concat(_,[3,4]),
+    )
+
+d1([1,2]) <=> [1,2,3,4]
 ```
 
 ## Dict Build
 
-`_d(<<expression1|fArg1>,<expression2|fArg2>>,*) | {<expression|hashFArg>:<expression|fArg>,+}`
+`db(<<expression1|fArg1>,<expression2|fArg2>>,*) | {<expression|hashFArg>:<expression|fArg>,+}`
 
-This builds a dictionary.  If we use the `_d(..)` syntax, we supply key-value pairs consecutively, ensuring that the evaluation of any fArg for a key is hashable:
+This builds a dictionary.  There are two ways to use the `db(..)` syntax.  First, we can just provide a key:
 ```
-from pype import _d as db
+from pype import db
 
-pype(2,db(1,_+1,3,_+3)) <=> {1:2+1,3:2+3} <=> {1:3,3:5}
+def f1(n):
+
+    (db('n'),
+    )
+
+f1(2) <=> {'n':2}
 ```
-If you only have one fArg expression in the build expression, that fArg will be the key for the accum in the new dictionary:
+Secondly, we can supply a list of fArgs for keys and values, evaluated against the accum:
 ```
-pype(2,db('two')) <=> pype(2,db('two',_)) <=> {'two':2}
+def f1(n):
+
+    (db('a',_+1,'b',_*2,'c',_*10),
+    )
+
+f1(2) <=> {'a':3,'b':4,'c':20}
 ```
 If the raw dictionary syntax is used, we must ensure that the dictionary does not contain the key "else", otherwise it will be evaluated as a switch dict:
 ```
-pype(2,{_+1:_+3,_*4:_*3}) <=> {2+1:2+3, 2*4:2*3} <=> {3:5, 8:10}
-```
+def f1(n):
 
+    ({_+1:_+3,
+      _*4:_*3},
+    )
+
+f1(2) <=> {2+1:2+3, 2*4:2*3} <=> {3:5, 8:10}
+```
 ## Dict Assoc
 
-`_assoc(<<expression1|fArg1>,<expression2|fArg2>>,+)`
+`a(<<expression1|fArg1>,<expression2|fArg2>>,+)`
 
 We insert one or more key-value pairs into the accum, where accum is a mapping, in the same way as Dict Build:
 ```
-from pype import _assoc as a
+from pype import a
 
-pype({1:2},a(3,4,5,6)) <=> {1:2,3:4,5:6}
+def f1(js):
+
+    (a('a',4,'b',6),
+    )
+
+f1({'c':4}) <=> {'a':4,'b':6,'c':4}
 ```
 
-A commonly used shorthand for assoc is `_a` - `import _assoc as _a`.
 ## Dict Merge
-`_merge(<mapping|fArg>)`
+`m(<mapping|fArg>)`
 
 This merges a mapping or an fArg that returns a mapping with the accum, which should also be a mapping:
 ```
-from pype import _merge
+from pype import m
 
-pype({1:2},_merge({3:4})) <=> {1:2,3:4}
+def f1(js):
+
+    (m({'b':4}),
+    )
+
+f1({'a':2}) <=> {'a':2,'b':4}
 ```
-A commonly used shorthand for assoc is `_m` - `import _merge as _m`.
+
 ## Dict Dissoc
-`_dissoc(<expression|fArg>,+)`
+`d(<expression|fArg>,+)`
 
 This removes keys specified by `<exppression|fArg>,+` from the accum, which must be a mapping:
 ```
-from pype import _dissoc as d
+from pype import d
 
-pype({1:2,3:4},d(1)) <=> {3:4}
+def f1(js):
+
+    (d('a'),
+     d('b'),
+    )
+
+f1({'a':1,'b':2,'c':3}) <=> {'c':3}
 ```
-A commonly used shorthand for assoc is `_d` - `import _dissoc as _d`, although this overrides the `_d` for dict builds, so be careful.  I like to use `_db` for dict build, and `_d` for `dissoc`.  
+
 
 ## Embedded Pype
 `_p(fArg,+)`

@@ -1,5 +1,7 @@
 # Pype3
 
+"Giselbertus hoc fecit."
+
 ## Before you begin reading
 
 You can understand the basic syntactic ideas behind pype in the `python-pype-lang-3/tutorial` directory.  To run any script, type the `python3 ...` command in the first docstring.  It is a good idea to tour the language in the following order:
@@ -278,7 +280,6 @@ def f(n):
 
 f(1) <=> 2
 ~~~~
-
 ## Mirrors
 
 `_`
@@ -556,85 +557,161 @@ from pype.helpers import dct_items
 def key_value_string(keyValuePair):
   return f'key is {keyValuePair[0]}, value is {keyValuePair[1]}'
   
-pype({3:1,4:2,5:3},dct_items,[key_value_string]) <=> ['key is 3, value is 1','key is 4, value is 2','key is 5, value is 3'] 
+def d1(js):
+
+    (dct_items,
+     [key_value_string],
+    )
+
+d1({3:1,4:2,5:3}) <=> ['key is 3, value is 1','key is 4, value is 2','key is 5, value is 3'] 
 ```
 ## Reduces
 
+`[(fArg1,),<expression|fArg2>]`
 `[(fArg1,),<expression|fArg2>,<expression|fArg3>]`
 
-This is a reduce on an iterable accum, where `fArg1` is a binary function applied to an accumuled value and an element of the accum, `<expression|fArg2>` is the starting value, and `<expression|fArg3>` is the iterable:
+This is a reduce on an iterable accum.  In the first case `fArg1` is a binary function applied applied to an accumuled value and an element of the accum:
 ```
-sm=lambda accumulatedValue,element: accumulatedValue+element
+def sm(accumulatedValue,element): return accumulatedValue+element
 
-pype([1,2,3],[(sm,)]) <=> 1 + 2 + 3 <=> 6
+def f1(ls):
+
+    ([(sm,),_],
+    )
+
+
+f1([1,2,3]) <=> 1 + 2 + 3 <=> 6
+```
+If fArg2 is in the expression, this is evaluated as a starting value for the reduce:
+```
+def f1(ls):
+
+    ([(sm,),_,10],
+    )
+
+
+f1([1,2,3]) <=> 10 + 1 + 2 + 3 <=> 16
+```
+fArg1 and fArg2 can be any fArg applied to the accum:
+```
+def add1(n): return n+1
+
+def f1(ls):
+
+    ([(sm,),[add1],len],
+    )
+
+
+ls=[1,2,3]
+f1(ls) <=> len(ls) + add1(1) + add1(2) + add1(3) <=> 3 + 2 + 3 + 4 <=> 12
 ```
 If the accum is a sequence, then `fArg` is applied to the elements of that sequence.  If accum is a mapping, `fArg` is applied to the values of that mapping.
-
-`<expression|fArg2>` refers to the optioonal starting value.  If it is an expression, then that expression is the starting value:
-
-```
-pype([1,2,3],[(sm,),6]) <=> 12 + 1 + 2 + 3 <=> 18
-```
-
-If it is `fArg2` then this `fArg` is first evaluated and then given as the starting value:
-```
-pype([1,2,3],[(sm,),len]) <=> len([1,2,3]) + 1 + 2 + 3 <=> 3 + 1 + 2 + 3 <=> 9
-```
 ## Filters
 
 `{hashBoolFArg}`
 
 The accum is a sequence or mapping.  If the accum is a sequence, the filter operates on all elements of the sequence, and returns a list.  If it is a mapping, the filter operates on all values of the mapping, and returns a dictionary.
 
-Because the expression uses a set, you must ensure that your fArgs are hashable - if they contain lists or dictionaries, you should wrap them using `build_pype`.
-
 The filter returns all values in the sequence or mapping for which any fArgs can be evaluated as true:
 ```
-gt1=lambda x: x>1
-eq0=lambda x: x == 0
+def gt1(x): return x>1
+def eq0(x): return x == 0
+
+def f1(ls):
+
+    ({gt1},
+     {eq0},
+    )
+
 ls=[0,-1,2,3,1,9]
-pype(ls,{gt1},{eq0}) <=> [el for el in ls if gt1(el) or eq0(el0)] <=> [el for el in ls if el > 1 or el == 0] <=> [0,2,3,9]
+f1(ls) <=> [el2 for el2 [el1 for el1 in ls if gt1(el1)] if eq0(el2)] <=> [el for el in ls if el > 1 or el == 0] <=> [0,2,3,9]
 ```
 Note that when there is only one fArg, the expression is equivalent to an AND filter.
 
 
 ## Switch Dicts
 
-`{<hashFArg|expression>:<fArg|expression>,+,'else':<fArg|expression>}`
+`{<hashBoolFArg|expression>:<fArg|expression>,+,'else':<fArg|expression>}`
 
-These mimic the swtich/case statements in many languages.  Here's how they work:
-
-1. The swtich dict has keys, each one of which is either a hashable fArg or an expression, and one of which must be 'else'.
-2. If the accum is equal to a key that is an expression, then we select that value.
-3. If the accum is not equal to a key that is an expression, then every key that is an fArg is evaluated against the accum.  We select the value corresponding to the last fArg to be evaluated as true.
-4. If neither (2) nor (3) are successful, we select the value corresponding with "else".
-5. Once we select a value from (2), (3), or (4), we return that value if it is an expression, or evaluate it against the accum if it is an fArg.
-
-This will make more sense if we demonstrate it:
+These implement conditionals.  The switch dict is divided into key-value pairs.  One of these keys must be 'else'.  Each key and value is an fArg.  A switch dict returns the evauation of the value fArg whose corresponding key fArg evaluates to True:
 ```
-pype(1,{1:"one",2:"two","else":"Nothing"}) <=> "one"
-pype(2,{1:"one",2:"two","else":"Nothing"}) <=> "two"
-pype(3,{1:"one",2:"two","else":"Nothing"}) <=> "nothing"
+def f1(n):
 
-pype(3, {_ > 2: "greater than two", 2: "two", "else" : _}) <=> pype(3, {(gt,_,2): "greater than two", 2: "two", "else" : _}) <=> "greater than two"
-pype(2, {_ > 2: "greater than two", 2: "two", "else" : _}) <=> pype(2, {(gt,_,2): "greater than two", 2: "two", "else" : _}) <=> "two"
-pype(4, {_ > 2: "greater than two", 2: "two", "else" : _}) <=> pype(4, {(gt,_,2): "greater than two", 2: "two", "else" : _}) <=> 4
+    ({_ == 1:'one',
+      _ == 2:'two',
+      'else':'no idea'},
+    )
+
+f1(1) <=> 'one'
+f1(2) <=> 'two'
+f1(3) <=> 'no idea'
 ```
-We evaluate every fArg key in order, so only the value for the last evaluated fArg is returned:
-```
-pype(3, {_ > 2: "greater than two", _ < 4 : "less than four", "else" : _}) <=> "less than four"
+Because Python3.7 orders dictionary keys by insertion, if there are more than one key fArgs which evaluate as True, then the evaluated fArg value for the first key is returned:
+def f1(n):
+
+    ({_ > 1:'greater than one',
+      _ > 2:'greater than two',
+      'else':'no idea'},
+    )
+
+f1(1) <=> 'no idea'
+f1(2) <=> 'greater than two'
+f1(3) <=> 'greater than one'
 ```
 ### Switch Dict Macros
-There are several functions which return a switch dict that follows a given, commonly used pattern:
+There are several functions which return a switch dict:
 ```
-_if(cond,expr) => {cond:expr,'else':_}
-_iff(cond,expr) => {cond:expr,'else':False}
-_ifp(cond,*fArgs) => {cond:_p(*fArgs),'else':_}
-_iffp(cond,*fArgs) => {cond:_p(*fArgs),'else':False}
+iff(cond,expr) => {cond:expr,'else':_}
+ift(cond,expr) => {cond:expr,'else':False}
+ifp(cond,*fArgs) => {_:ep(*fArgs),'else':_}
+iftp(cond,*fArgs) => {cond:ep(*fArgs),'else':False}
+```
+iff behaves like the logical "if and only if":
+```
+def f1(n):
+
+    (iff(_>2,_*2),
+    )
+
+f1(0) <=> 0
+f1(2) <=> 2
+f1(3) <=> 6
+```
+ift is convenient when you want a variable return a False if conditions are not met:
+```
+def f1(n):
+
+    (ift(_>2,_*2),
+    )
+
+f1(0) <=> False
+f1(2) <=> False
+f1(3) <=> 6
+```
+ifp and iftp allow multiple fArgs to be executed in an embedded pype:
+```
+def f1(n):
+
+    (ifp(_>2,_*2,_*100),
+    )
+
+f1(0) <=> 0
+f1(2) <=> 2
+f1(3) <=> 3*2*100 <=> 500
+
+def f2(n):
+
+    (iftp(_>2,_*2,_*100),
+    )
+
+f1(0) <=> False
+f1(2) <=> False
+f1(3) <=> 3*2*100 <=> 500
+
 ```
 ## Do expression
 
-`_do(objectCallable)`
+`do(objectCallable)`
 
 This is for instances where objects have methods that change the object, but do not return a value.  `pandas` has a lot of these, such as `dropna`:
 
@@ -645,9 +722,14 @@ value=df.dropna()
 
 print(value) <=> None
 ```
-So, `_do` runs the function and returns the object.  Note that the object must be the accum:
+So, `do` runs the function and returns the object.  Note that the object must be the accum:
 ```
-pype(df,_do(_.dropna)) <=> df after we run dropna on it.
+def f1(df):
+
+    (do(_.dropna),
+    )
+
+f1(df) <=> df after we run dropna on it.
 ```
 
 ## List Build

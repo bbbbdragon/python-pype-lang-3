@@ -4,7 +4,7 @@ python3 switch_dicts_and_embedded_pypes.py
 python3 watch_file.py -p2 python3 switch_dicts_and_embedded_pypes.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
-from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp
+from pype3 import ep,tup,db,a,iff,d,ift,iftp,squash,ifp
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
@@ -33,6 +33,22 @@ def switch_dict(n):
       'else':"I don't know"},
     )
 
+
+def iff_example(n):
+    '''
+    The iff macro returns n*100 if n>2, else n.
+    '''
+    (iff(_>2,_*100),
+    )
+
+
+def ift_example(n):
+    '''
+    The iff macro returns n*100 if n>2, else False.
+    '''
+    (ift(_>2,_*100),
+    )
+    
 
 def func(x,k):
     '''
@@ -87,6 +103,39 @@ def switch_dict_and_ep(ls):
       'else':len},
     )
 
+
+def ift_example(n):
+    '''
+    The first argument of an ifp statement is a contitional, and the rest 
+    are fArgs for an ep. If the conditional evaluates as True, return the
+    results of the ep.  Otherwise, return n.
+    '''
+    (ift(_ > 2,_*100),
+    )
+
+
+def iftp_example(n):
+    '''
+    The first argument of an iftp statement is a contitional, and the rest 
+    are fArgs for an ep. If the conditional evaluates as True, return the
+    results of the ep.  Otherwise, return False.
+    '''
+
+    (ifp(_*10,[_+1]),
+    )
+
+
+def ifp_example(n):
+    '''
+    If the accum is n, evaluate the accum in the fArgs.  Otherwise, 
+    return n.
+    '''
+    (ifp(_*10,[_+1]),
+    )
+
+
+
+
 pypeify_namespace(globals())
 
 if __name__=='__main__':
@@ -104,6 +153,18 @@ if __name__=='__main__':
     print('switch_dict(3)')
     print(switch_dict(3))
 
+    print('iff_example(1)')
+    print(iff_example(1))
+
+    print('iff_example(3)')
+    print(iff_example(3))
+
+    print('ift_example(1)')
+    print(ift_example(1))
+
+    print('ift_example(3)')
+    print(ift_example(3))
+    
     print('*'*30)
     print('embedded pypes for lists')
     print('*'*30)
@@ -151,3 +212,21 @@ if __name__=='__main__':
 
     print('switch_dict_and_ep(ls)')
     print(switch_dict_and_ep(ls))
+
+    print('ift_example(1)')
+    print(ift_example(1))
+
+    print('ift_example(5)')
+    print(ift_example(5))
+
+    print('ifp_example([])')
+    print(ifp_example([]))
+
+    print('ifp_example([1,2,3,4])')
+    print(ifp_example([1,2,3,4]))
+
+    print('iftp_example([])')
+    print(iftp_example([]))
+
+    print('iftp_example([1,2,3,4])')
+    print(iftp_example([1,2,3,4]))

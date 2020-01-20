@@ -381,7 +381,7 @@ def f2(js):
 f2({'a':2,'b;:4}) <=> 2
 ```
 If there are multiple `[<expression|fArg>]`, or if there are multiple bracketed indices, then we evaluate them one at a time:
-``
+```
 def f1(ls):
     
     (_[0,1],

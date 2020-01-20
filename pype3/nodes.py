@@ -2,7 +2,7 @@ from pype3.fargs import *
 from pype3.build_helpers import *
 from pype3.vals import LamTup,delam,is_bookmark,NameBookmark
 from pype3.fargs import INDEX_ARG_DICT
-from pype3.vals import LamTup
+from pype3.vals import LamTup,VarAssign
 from pype3.type_checking import *
 from itertools import groupby
 from inspect import signature
@@ -41,6 +41,8 @@ MAJOR_TYPES={typ:typ.__name__ for typ in MAJOR_TYPES}
 
 ACCUM_STORE=Name(id='accum',ctx=Store())
 ACCUM_LOAD=Name(id='accum',ctx=Load())
+LAMBDA_ACCUM_LOAD=Name(id='lambda_accum',ctx=Load())
+
 RETURN_ACCUM=[Return(value=ACCUM_LOAD)]
 NUMPY_NAME=Name(id='np',ctx=Load())
 OPERATOR_NAME=Name(id='_operator',ctx=Load())
@@ -76,6 +78,7 @@ LOADED_LIST_ELEMENT=Name(id='list_element',ctx=Load())
 STORED_LIST_ELEMENT=Name(id='list_element',ctx=Store())
 
 DO_LAMBDA_ARG=Name(id='do_lambda_arg',ctx=Load())
+CLOSURE_LAMBDA_ARG=Name(id='closure_lambda_arg',ctx=Load())
 NONE_NODE=NameConstant(value=None)
 
 #############################
@@ -980,11 +983,11 @@ def ast_name_node(fArg,accumNode):
 # QUOTE #
 #########
 
-def quote_node(fArgs,accum=ACCUM_LOAD):
+def quote_node(fArg,accum=ACCUM_LOAD):
     # print('*'*30)
     # print('quote_node')
 
-    fArg=fArgs.val()
+    fArg=fArg.val()
     
     # print(f'{fArg.val()} is fArg')
 
@@ -993,6 +996,79 @@ def quote_node(fArgs,accum=ACCUM_LOAD):
     # print(f'{dump(node)} is node')
 
     return node
+
+
+################
+# CLOSURE NODE #
+################
+
+def embedded_closure_chain(fArgs,accum):
+
+    if len(fArgs) == 1:
+
+        return optimize_rec(fArgs[0],accum)
+
+    return optimize_rec(fArgs[0],embedded_closure_chain(fArgs[1:],accum))
+
+
+def closure_lambda_node(node,lambdaArgs):
+
+    return Lambda(args=arguments(args=lambdaArgs, 
+                                       vararg=None, 
+                                       kwonlyargs=[], 
+                                       kw_defaults=[], 
+                                       kwarg=None, 
+                                       defaults=[]),
+                  body=node)
+
+
+def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
+
+    fArgs=fArg[1:]
+    lambdaArgs=[arg(arg='closure_lambda_arg', annotation=None)]
+    
+    if is_list(fArgs[0]) and len(fArgs[0]) > 1:
+
+        # print('is closure node')
+        # print(f'{fArgs[0]}')
+
+        lambdaArgNodes=[optimize_rec(fArg,accum) for fArg in fArgs[0]]
+        accum=lambdaArgNodes[0]
+
+        if any([not isinstance(fArg,Name) for fArg in lambdaArgNodes]):
+
+            raise Exception(f'Lambda args {lambdaArgs} contains a non-name node')
+
+        # print(f'{[ast.dump(lambdaArg) for lambdaArg in lambdaArgs]}')
+
+        lambdaArgNames=[lambdaArg.id for lambdaArg in lambdaArgNodes]
+        lambdaArgs=[arg(arg=lambdaArgName,annotation=None)\
+                    for lambdaArgName in lambdaArgNames]
+
+        # print(f'{[ast.dump(a) for a in lambdaArgs]}')
+
+        fArgs=fArgs[1:]
+
+    fArgs.reverse()
+
+    closureChain=embedded_closure_chain(fArgs,accum)
+
+    return closure_lambda_node(closureChain,lambdaArgs)
+
+
+##########
+# ASSIGN #
+##########
+
+def assign_node(fArg,accum=ACCUM_LOAD):
+
+    assignTo=fArg.assignTo
+    assignFrom=fArg.assignFrom
+    assignToNode=optimize_rec(assignTo,accum)
+    assignToNode.ctx=Store()
+    assignFromNode=optimize_rec(fArg.assignFrom,accum)
+
+    return Assign(targets=[assignToNode], value=assignFromNode)
 
 
 ############
@@ -1081,7 +1157,9 @@ SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_list_concat,list_concat_node),
               (is_do,do_node),
               (is_reduce,reduce_node),
-              (is_quote,quote_node)]
+              (is_quote,quote_node),
+              (is_closure,closure_node),
+              (is_assign,assign_node)]
 OPTIMIZE_PAIRS=[(is_callable,callable_node),
                 (is_index,index_node)]+SHARED_PAIRS
 LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),
@@ -1149,17 +1227,21 @@ def optimize_f_args(fArgs,startNode,embeddingNodes):
     assignList=[assign_node_to_accum(startNode)]
 
     for fArg in fArgs:
-
+ 
         opt=optimize_rec(fArg,ACCUM_LOAD,OPTIMIZE_PAIRS,embeddingNodes)
         
-        if is_list(opt):
+        if isinstance(opt,Assign):
+
+            assignList.append(opt)
+
+        elif is_list(opt):
 
             assignList.extend(opt)
 
         else:
 
             assignNode=assign_node_to_accum(opt)
-
+ 
             assignList.append(assignNode)
 
     #print('*'*30)

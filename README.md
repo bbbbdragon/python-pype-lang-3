@@ -10,6 +10,7 @@ You can understand the basic syntactic ideas behind pype in the `python-pype-lan
 * `filters.py` - Examples of filters for flat and embedded dictionaries and lists.
 * `switch_dicts_and_embedded_pypes.py` - Examples of conditionals and embedded pypes.  These two were put into the same category because embedded pypes can define a more sophisticated control flow.
 * `dict_and_list_operations.py` - Dictionary/JSON and list manipulations.
+* `asigns_closures_and_function_args.py` - How to assign variables inside pype expressions, plus closures and passing functions as arguments.
 
 ## What and why?
 
@@ -227,6 +228,8 @@ fArgs are the following:
 * do expressions - For classes with methods that do not return a value, we can run the code and then return the object.
 * list operations - Building lists from the accum, appending items, extending items, concatenation.
 * embedded pypes - Specifying pypes within an fArg.
+* closures - Declaring pype functions inside pype code.
+* assigns - Assigning variables to pype expressions. 
 
 In addition, there are two types of objects, Getter and PypeVal.  These override most operators so that they can be converted into fArgs.  In the latest versions of this, you will not need to worry about these objects, since the compiler takes care of them.
 
@@ -882,8 +885,16 @@ def f1(ls):
 f1([1,2,3,4,5,6]) <=> {"number of items greater than 3": 3, "number of itemsless than 3": 2}
 ```
 
-## Quotes
-`Quote(<fArg|expression>)`
+## Assigns
+`varName << <fArg|expression>`
+
+This allows you to declare variables inside a pype tuple.  The benefit of this is that once this variable is declared, you can reference it anywhere below in the tuple.  Let's say, for example, that you wanted to use a dict build to declare a few variables:
+```
+def f1(n):
+  
+```
+## Closures
+`cl(<fArg|expression>,+)|cl(<fArg|expression>,+)`
 
 These are not completely implemented yet, so I must defer for a bit.
 

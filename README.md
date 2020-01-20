@@ -128,8 +128,6 @@ To run any of these files from a command line, just type in the quoted command a
 ```
 python3 quicksort.py
 ```
-In addition, there is an example of a Docker container, described in `examples/services/Dockerfile`, which will run the classifier service.  Assuming you have docker on your machine, you can run this with the script `examples/services/run_docker.sh`.  This means that you can readily deploy a pype microservice whenever you want, wherever you want.  You can test it with `test_classifier_service.sh`.
-
 # FAQ
 
 * "Is Pype Fast" 
@@ -157,9 +155,11 @@ Ask this question for yourself after having done a few projects.  For me, it was
 
 * "Can I build microservices in pype?"
 
-Heck yes you can!  I just told you about the Dockerfile, gosh!!!  Pype was designed for rapid (and rabid) implementation of microservices.  You can see several examples of microservices in the `examples/services` directory.  Since pype excells at transforming JSON's, a routing funciton can simply take the request JSON, make the necessary transformations, and send it back.  When you apply the `optimize` decorator, you'll find that these services are both performant and scalable.  The small Dockerfile lets you Dockerize a service to deploy on AWS Fargate and other production-type server environments.  
+Heck yes you can!  Pype was designed for rapid (and rabid) implementation of microservices.  Since pype excells at transforming JSON's, a routing funciton can simply take the request JSON, make the necessary transformations, and send it back.  When you apply the `optimize` decorator, you'll find that these services are both performant and scalable.  The small Dockerfile lets you Dockerize a service to deploy on AWS Fargate and other production-type server environments.  
 
 By the way, optimized pype and gunicorn are best of friends.  Vote for Pedro.
+
+Examples of pype microservices soon to come.  
 
 * "Can you dynamically generate pype code"
 

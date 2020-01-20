@@ -753,13 +753,18 @@ f1({1:2,3:4}) <=> {6:20,8:40}
 
 ## List Append 
 
-`_append(<expression|fArg>,+])`
+`app(<expression|fArg>,+])`
 
 This extends a list with either an expression or an evaluated fArg:
 ```
-from pype import _append
+from pype import app
 
-p([1,2],_append(3,4)) <=> [1,2,3,4]
+def f1(ls):
+
+    (app(3),
+    )
+
+f1([1,2]) <=> [1,2,3]
 ```
 
 ## List Concat 
@@ -769,14 +774,14 @@ p([1,2],_append(3,4)) <=> [1,2,3,4]
 This concatenates two lists, either expressions or fArgs.
 
 ```
-from pype import concat
+from pype import c
 
 def f1(ls):
 
-    (concat(_,[3,4]),
+    (c(_,[3,4]),
     )
 
-d1([1,2]) <=> [1,2,3,4]
+f1([1,2]) <=> [1,2,3,4]
 ```
 
 ## Dict Build

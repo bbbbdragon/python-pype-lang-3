@@ -15,6 +15,7 @@ import ast
 import numpy as np
 import pprint as pp
 import astpretty
+from copy import deepcopy
 '''
 This module contains the AST tree transformations necessary to run the optimizer.
 '''
@@ -201,8 +202,6 @@ def is_final_pype_call(lastNode,aliases):
     return isinstance(lastNode,Expr) and has_pype_call(lastNode.value,aliases)
 
 
-
-
 class NoReturnReplacer(NodeVisitor):
     '''
     If the function ends with a pype call, but no 'return', then we put in a return.
@@ -242,45 +241,6 @@ class NoReturnReplacer(NodeVisitor):
         node.decorator_list=[]
 
         self.generic_visit(node)
-
-
-#################
-# NAME REPLACER # 
-#################
-
-class NameReplacer(NodeTransformer):
-    '''
-    This finds any name and converts it into a NameBookmark object, so when the fArgs
-    are returned by pype_return_fargs, they contain NameBookmark objects.
-    '''
-    def __init__(self,nameSpace=set([])):
-
-        self.nameSpace=set([el for el in nameSpace])
-
-    def visit_Name(self,node):
-
-        self.generic_visit(node)
-
-        newNode=node
-
-        if node.id in self.nameSpace:
-
-            #print(f'visiting node {ast.dump(node)}')
-            #print(f'{str(self.nameSpace)[:20]} is namespace')
-
-            name=node.id
-            newNode=Call(func=Attribute(value=PYPE_VALS_NODE,
-                                        attr='NameBookmark',
-                                        ctx=Load()),
-                         args=[Str(s=name)], 
-                         keywords=[])
-            
-            #newNode=fix_missing_locations(newNode)
-            #node=fix_missing_locations(node)
-
-            #print(f'node is now {ast.dump(newNode)}')
-
-        return newNode
 
 
 #####################
@@ -334,6 +294,117 @@ class PypeValReplacer(NodeVisitor):
         self.generic_visit(node)
        
 
+##################
+# NAME REPLACERS # 
+##################
+
+class NameReplacer(NodeTransformer):
+    '''
+    This finds any name and converts it into a NameBookmark object, so when the fArgs
+    are returned by pype_return_fargs, they contain NameBookmark objects.
+    '''
+    def visit_Name(self,node):
+
+        self.generic_visit(node)
+
+        newNode=node
+        name=node.id
+        newNode=Call(func=Attribute(value=PYPE_VALS_NODE,
+                                    attr='NameBookmark',
+                                    ctx=Load()),
+                     args=[Str(s=name)], 
+                     keywords=[])
+            
+        return newNode
+
+
+
+class NameReplacerNameSpace(NodeTransformer):
+    '''
+    This finds any name and converts it into a NameBookmark object when it is in the 
+    scope of the function, so when the fArgs returned by pype_return_fargs, they 
+    contain NameBookmark objects.
+    '''
+    def __init__(self,nameSpace=set([])):
+
+        self.nameSpace=set([el for el in nameSpace])
+
+
+    def visit_Name(self,node):
+
+        self.generic_visit(node)
+
+        newNode=node
+
+        if node.id in self.nameSpace:
+
+            name=node.id
+            newNode=Call(func=Attribute(value=PYPE_VALS_NODE,
+                                        attr='NameBookmark',
+                                        ctx=Load()),
+                         args=[Str(s=name)], 
+                         keywords=[])
+            
+        return newNode
+
+
+##########################
+# CLOSURE NAME REPLACERS #
+##########################
+
+class ClosureNameReplacer(NodeTransformer):
+    '''
+    This applies the NameBookmark to closure nodes.
+    '''
+    def visit_Call(self,node):
+
+        self.generic_visit(node)
+
+        # print(f'{ast.dump(node)} is node before')
+
+        newNode=deepcopy(node)
+        
+        if (isinstance(node.func,Name) \
+            and node.func.id == 'cl' \
+            and isinstance(node.args[0],List)):
+ 
+            closureNameSpace=[]
+            
+            get_body_names(node.args[0],closureNameSpace)
+
+            # print(f'{closureNameSpace} is closureNameSpace')
+
+            newNode=NameReplacerNameSpace(closureNameSpace).visit(newNode)
+
+        # print(f'{ast.dump(newNode)} is node after')
+
+        return newNode
+            
+
+###########################
+# ASSIGN NAMESPACE FINDER #
+###########################
+
+class AssignNameSpaceFinder(NodeVisitor):
+    '''
+    This specifically craws an fArg node and looks for any assignment operators.
+    When it finds one, it adds the assigned-to name to the namespace.
+    '''
+    def __init__(self,nameSpace):
+
+        self.nameSpace=nameSpace
+
+    def visit_BinOp(self,node):
+
+        if isinstance(node.op,LShift):
+            
+            leftNodeName=node.left.id
+
+            self.nameSpace.add(leftNodeName)
+
+        self.generic_visit(node)
+
+
 ######################
 # CALL NAME REPLACER #
 ######################
@@ -348,6 +419,14 @@ def get_body_names(el,names=[]):
 
             get_body_names(v,names)
 
+    elif isinstance(el,List):
+
+        elts=el.elts
+
+        for el in elts:
+
+            get_body_names(el,names)
+
     elif isinstance(el,Assign):
 
         targets=el.targets
@@ -365,6 +444,7 @@ def get_body_names(el,names=[]):
         for v in el.elts:
 
             get_body_names(v,names)
+
 
 def pype_return_f_args(accum,*fArgs):
     '''
@@ -379,34 +459,6 @@ IMPORT_OPTIMIZE=ImportFrom(module='pype',
 PYPE_RETURN_F_ARGS=Attribute(value=Name(id='optimize',ctx=Load()),
                              attr='pype_return_f_args',
                              ctx=Load())
-
-def get_body_names(el,names=[]):
-    '''
-    Recursively retrieve names from function body.
-    '''
-    if is_list(el):
-
-        for v in el:
-
-            get_body_names(v,names)
-
-    elif isinstance(el,Assign):
-
-        targets=el.targets
-        
-        for target in targets:
-
-            get_body_names(target,names)
-
-    elif isinstance(el,Name):
-
-        names.append(el.id)
-
-    elif isinstance(el,Tuple):
-
-        for v in el.elts:
-
-            get_body_names(v,names)
 
 
 
@@ -487,11 +539,29 @@ class NameBookmarkReplacer(NodeVisitor):
             # Change the function call from pype to pype_return_f_args, which only
             # returns the fArgs.
             # node.body[-1].value.func=PYPE_RETURN_F_ARGS
-            # Now, we look for any Name instance in the FArg and replace it with
-            # a NameBookMark. Feed resulting nodes into newFArgsNodes.
+
             fArgsNodes=node.body[-1].value.args[1:]
-            newFArgsNodes=[NameReplacer(self.nameSpace).visit(fArgNode) \
-                           for fArgNode in fArgsNodes]
+            newFArgsNodes=[]
+
+            for fArgNode in fArgsNodes:
+
+                # Look for any new assigned variables, add them to the nameSpace.
+                assignFinder=AssignNameSpaceFinder(self.nameSpace)
+                
+                assignFinder.visit(fArgNode)
+
+                self.nameSpace|=assignFinder.nameSpace
+
+                # Then, replace them as NameBookmarks.
+
+                replacedNode=NameReplacerNameSpace(self.nameSpace).visit(fArgNode)
+
+                # Now we are going to look into closures that contain arguments.
+
+                replacedNode=ClosureNameReplacer().visit(replacedNode)
+
+                newFArgsNodes.append(replacedNode)
+
             # The new fArgsNodes have NameBookmark anywhere there is a local variable
             # referenced.  So we replace the fArgs in the function body with this.
             node.body[-1].value.args[1:]=newFArgsNodes
@@ -500,6 +570,7 @@ class NameBookmarkReplacer(NodeVisitor):
         node=fix_missing_locations(node)
 
         self.generic_visit(node)
+
 
 
 #################

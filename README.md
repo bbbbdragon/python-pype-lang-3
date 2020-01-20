@@ -1,7 +1,5 @@
 # Pype3
 
-"Giselbertus hoc fecit."
-
 ## Before you begin reading
 
 You can understand the basic syntactic ideas behind pype in the `python-pype-lang-3/tutorial` directory.  To run any script, type the `python3 ...` command in the first docstring.  It is a good idea to tour the language in the following order:

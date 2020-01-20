@@ -1,4 +1,4 @@
-from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_dict,merge,_
+from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_dict,merge,closure,_
 from pype3.helpers import dct_dissoc,dct_assoc,dct_merge
 
 ##########
@@ -103,3 +103,8 @@ def c(*fArgs):
 def change(fromKeyFArg,toKeyFArg):
 
     return (dct_dissoc,(dct_assoc,_,toKeyFArg,_[fromKeyFArg]),fromKeyFArg)
+
+
+def cl(*fArgs):
+
+    return [closure,*fArgs]

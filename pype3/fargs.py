@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import pprint as pp
 import types
-from pype3.vals import NameBookmark
+from pype3.vals import NameBookmark,VarAssign
 
 #############
 # CONSTANTS #
@@ -50,6 +50,7 @@ l='BUILD_LS'
 append='LIST_APPEND'
 concat='LIST_CONCAT'
 while_loop='WHILE_LOOP'
+closure='PYPE_CLOSURE'
 do='FARG_DO'
 LIST_ARGS=set([embedded_pype,
                build_dict,
@@ -372,6 +373,26 @@ def is_slice(fArg):
         and fArg[0] == PY_SLICE
 
 
+##########
+# ASSIGN #
+##########
+
+def is_assign(fArg):
+
+    return isinstance(fArg,VarAssign)
+
+
+###########
+# CLOSURE #
+###########
+
+def is_closure(fArg):
+
+    return is_list(fArg) \
+        and len(fArg) > 1 \
+        and fArg[0] == closure
+
+    
 ###########
 # IS FARG #
 ###########

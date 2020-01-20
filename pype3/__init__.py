@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.15'
+__version__='3.0.16'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *
@@ -28,6 +28,7 @@ import builtins
 from pype3.fargs import _,_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_last
 from pype3.macros import ep,iff,ift,ifp,iftp,db,dbp,mp
 from pype3.macros import select,a,ap,m,d,tup,app,c,is_true,squash,change
+from pype3.macros import cl
 from numba import njit
 
 #######################

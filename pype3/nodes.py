@@ -847,6 +847,32 @@ def list_build_node(fArgs,accum=ACCUM_LOAD):
                 ctx=Load())
 
 
+###############
+# LIST APPEND #
+###############
+
+def list_append_node(fArgs,accum=ACCUM_LOAD):
+
+    fArgs=fArgs[1:]
+    optimizedFArgs=[optimize_rec(fArg,accum) for fArg in fArgs]
+    
+    return callable_node_with_args(ls_append,
+                                   [accum]+optimizedFArgs)
+
+
+###############
+# LIST CONCAT #
+###############
+
+def list_concat_node(fArgs,accum=ACCUM_LOAD):
+
+    fArgs=fArgs[1:]
+    optimizedFArgs=[optimize_rec(fArg,accum) for fArg in fArgs]
+    
+    return callable_node_with_args(ls_extend,
+                                   optimizedFArgs)
+    
+
 ##############
 # DICT BUILD #
 ##############
@@ -1038,43 +1064,29 @@ def assign_node_to_accum(node,accum=ACCUM_STORE):
 # OPTIMIZER FUNCTIONS #
 #######################
 
+SHARED_PAIRS=[(is_lambda,lambda_node),
+              (is_slice,slice_node),
+              (is_mirror,mirror_node),
+              (is_map,map_dict_or_list_node),
+              (is_bookmark,ast_name_node),
+              (is_filter,filter_list_or_dict_node),
+              (is_switch_dict,switch_dict_node),
+              (is_dict_assoc,dict_assoc_node),
+              (is_dict_dissoc,dict_dissoc_node),
+              (is_dict_merge,dict_merge_node),
+              (is_dict_build,dict_build_node),
+              (is_embedded_pype,embedded_pype_node),
+              (is_list_build,list_build_node),
+              (is_list_append,list_append_node),
+              (is_list_concat,list_concat_node),
+              (is_do,do_node),
+              (is_reduce,reduce_node),
+              (is_quote,quote_node)]
 OPTIMIZE_PAIRS=[(is_callable,callable_node),
-                (is_mirror,mirror_node),
-                #(is_index_arg,index_arg_node),
-                (is_lambda,lambda_node),
-                (is_slice,slice_node),
-                (is_index,index_node),
-                (is_map,map_dict_or_list_node),
-                (is_bookmark,ast_name_node),
-                (is_filter,filter_list_or_dict_node),
-                (is_switch_dict,switch_dict_node),
-                (is_dict_assoc,dict_assoc_node),
-                (is_dict_dissoc,dict_dissoc_node),
-                (is_dict_merge,dict_merge_node),
-                (is_list_build,list_build_node),
-                (is_dict_build,dict_build_node),
-                (is_embedded_pype,embedded_pype_node),
-                (is_do,do_node),
-                (is_reduce,reduce_node),
-                (is_quote,quote_node),
-               ]
+                (is_index,index_node)]+SHARED_PAIRS
 LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),
-                       (is_mirror,mirror_node),
-                       (is_lambda,lambda_node),
-                       (is_slice,slice_node),
                        (is_index,lambda_index_node),
-                       (is_map,map_dict_or_list_node),
-                       (is_bookmark,ast_name_node),
-                       (is_filter,filter_list_or_dict_node),
-                       (is_switch_dict,switch_dict_node),
-                       (is_dict_assoc,dict_assoc_node),
-                       (is_dict_dissoc,dict_dissoc_node),
-                       (is_dict_merge,dict_merge_node),
-                       (is_list_build,list_build_node),
-                       (is_dict_build,dict_build_node),
-                       (is_embedded_pype,embedded_pype_node),
-                       (is_do,do_node),
-                       ]
+                      ]+SHARED_PAIRS
 
 
 def optimize_rec(fArg,

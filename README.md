@@ -11,7 +11,7 @@ You can understand the basic syntactic ideas behind pype in the `python-pype-lan
 * `maps.py` - Examples of maps for flat and embedded dictionaries and lists.
 * `filters.py` - Examples of filters for flat and embedded dictionaries and lists.
 * `switch_dicts_and_embedded_pypes.py` - Examples of conditionals and embedded pypes.  These two were put into the same category because embedded pypes can define a more sophisticated control flow.
-* `dict_operations.py` - Dictionary/JSON manipulations.
+* `dict_and_list_operations.py` - Dictionary/JSON and list manipulations.
 
 ## What and why?
 

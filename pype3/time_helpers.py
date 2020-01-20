@@ -2,7 +2,7 @@ import datetime as dt
 from copy import deepcopy
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
-from pype3.mappings import *
+from pype3.func_helpers import *
 '''
 This is a bunch of time helpers to cache dates and allow for quicker datetime
 processing.  Documentation forthcoming.  

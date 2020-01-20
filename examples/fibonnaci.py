@@ -1,8 +1,10 @@
 '''
 python3 fibonnaci.py
+
+python3 watch_file.py -p1 python3 fibonnaci.py  -d /Users/bennettbullock/python-pype-lang-3
 '''
-from pype2 import p,pypeify_namespace
-from pype2 import _,iff
+from pype3 import pypeify_namespace,p
+from pype3 import _,iff
 
 '''
 This shows you how to run the Fibonnaci sequence using three different, but 
@@ -30,9 +32,9 @@ def fib0(x):
     This just means, if x > 1, then return the sum of the function called on x-1 and x-2.
     Otherwise, just return x, which will be 1 or 0.  
     '''
-    return p( x,
-              {_ > 1:(fib0,_-1)+(fib0,_-2),
-               'else':_})
+    (x,
+     {_ > 1:(fib0,_-1)+(fib0,_-2),
+      'else':_})
 
 
 def fib1(x):
@@ -45,34 +47,26 @@ def fib1(x):
 
     So, we only apply the sum to x if it's above 1.
     '''
-    return p( x,
-              iff(_ > 1,(fib1,_-1)+(fib1,_-2)))
+    (x,
+     iff(_ > 1,(fib1,_-1)+(fib1,_-2)))
 
 
 def fib2(x):
     '''
-    Now, we are stripping out the return statement, since the compiler includes it.
-    '''
-    p( x,
-       iff(_ > 1,(fib2,_-1)+(fib2,_-2)))
-
-
-def fib3(x):
-    '''
     And now, we are even stripping out the pype call, which the compiler can handle.
     '''
     (x,
-     iff(_ > 1,(fib3,_-1)+(fib3,_-2)))
+     iff(_ > 1,(fib2,_-1)+(fib2,_-2)))
 
 
-def fib4(x):
+def fib3(x):
     '''
     And last but not least, we are enclosing this in a singleton tuple with no 
     reference to x (note the , at the end).  We can do this because the compiler
     infers that _ can only refer to x, since there are no other variables in the
     scope of the function. 
     '''
-    iff(_ > 1,(fib4,_-1)+(fib4,_-2)),
+    iff(_ > 1,(fib3,_-1)+(fib3,_-2)),
 
 
 '''
@@ -100,6 +94,7 @@ if __name__=='__main__':
 
         print(f'fib1({x}) is {fib1(x)}')
 
+
     print('*'*30)
     print('running on fib2')
 
@@ -113,9 +108,3 @@ if __name__=='__main__':
 
         print(f'fib3({x}) is {fib3(x)}')
 
-    print('*'*30)
-    print('running on fib4')
-
-    for x in range(13):
-
-        print(f'fib4({x}) is {fib4(x)}')

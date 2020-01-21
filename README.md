@@ -737,7 +737,11 @@ This creates a new list, eith either an expression or an evaluated fArg:
 ```
 from pype import tup
 
-p([1,2],tup(_0+8,_1+10)) <=> [9,20]
+f1(ls):
+    (tup(_0+8,_1+10),
+    )
+    
+f1([1,2]) <=> [9,11]
 ```
 These are often used when we want to transform the keys and values of a dictionary, in conjunction with index args, `dct_items` and `tup_dct`, the last of which builds a dictionary from a list of tuples or 2-element lists:
 ```
@@ -746,7 +750,7 @@ from python.helpers import dct_items,tup_dct
 def f1(js):
 
     (dct_items,
-     [_l(_0+5,_1+10)],
+     [tup(_0+5,_1+10)],
      tup_dct,
     )
 

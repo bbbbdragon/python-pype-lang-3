@@ -1081,8 +1081,18 @@ def ls_times_itself(ls):
   _*sz,
  )
 ```
-Much cleaner.
+Much cleaner.  But you could also use pype variable assigns:
+```
+from pype import pype as p
 
+def ls_times_itself(ls):
+ 
+ (sz << len*2,
+  [_+2],
+  {_ < 4},
+  _*sz,
+ )
+```
 ## Mixing Python and Pype
 The whole point of Pype is to allow you to program functionally while not having to give up Python's awesome libraries.  So when and where you want, mix mix mix.
 

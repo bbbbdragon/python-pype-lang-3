@@ -53,10 +53,11 @@ def fib1(x):
 
 def fib2(x):
     '''
-    And now, we are even stripping out the pype call, which the compiler can handle.
+    And now, we are even stripping out the accum, so that _ refers to the 
+    first argument of the function.
     '''
-    (x,
-     iff(_ > 1,(fib2,_-1)+(fib2,_-2)))
+    (iff(_ > 1,(fib2,_-1)+(fib2,_-2)),
+    )
 
 
 def fib3(x):

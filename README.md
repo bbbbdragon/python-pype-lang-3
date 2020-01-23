@@ -47,10 +47,10 @@ Here is how you'd write this in pype:
 ```
 def group_demographic(ages,agesNames):
 
-    ([tup(ep(_.age, # Get the 'age' value.
-             _/10, # divide by 10.
-             int, # floor-divide.
-             agesNames[_]), # Get the demographic name.
+    ([(ep(_.age, # Get the 'age' value.
+          _/10, # divide by 10.
+          int, # floor-divide.
+          agesNames[_]), # Get the demographic name.
           _.name)], # Iterate through each dict, create a tuple.
      tup_ls_dct, # Create a dictionary with names belonging to each demographic.
     )
@@ -464,6 +464,15 @@ class Obj:
     
 f1(Obj(1)) <=> Obj(1).val <=> 1
 ```
+Because the compiler interprets expressions like _[1,0] and _[(1,0)] in the same way, when you want to evaluate a lambda expression inside an index, you will have to wrap it in a tuple:
+```
+f1(ls):
+
+  (_[tup(add1,_0)], # ls[add1(ls[0])]
+  )
+
+f1([1,2,4]) <=> [1,2,4][add1(ls[0])] <=> [1,2,4][add1(1)] <=> [1,2,4][2] <=> 4
+```
 ### Indices and Callables
 When the index returns a callable, there are two possibilities.  If the index is the first fArg of a lambda, then the callable is called on the arguments of a lambda:
 ```
@@ -731,14 +740,12 @@ f1(df) <=> df after we run dropna on it.
 
 ## List Build
 
-`tup(<expression|fArg>,+)`
+`l(<expression|fArg>,+)`
 
 This creates a new list, eith either an expression or an evaluated fArg:
 ```
-from pype import tup
-
 f1(ls):
-    (tup(_0+8,_1+10),
+    (l(_0+8,_1+10),
     )
     
 f1([1,2]) <=> [9,11]
@@ -750,7 +757,7 @@ from python.helpers import dct_items,tup_dct
 def f1(js):
 
     (dct_items,
-     [tup(_0+5,_1+10)],
+     [l(_0+5,_1+10)],
      tup_dct,
     )
 

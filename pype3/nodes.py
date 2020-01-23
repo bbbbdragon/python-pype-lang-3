@@ -434,7 +434,8 @@ def index_node(fArgs,accum=ACCUM_LOAD,getFunc=get_call_or_false):
     # print('='*30)
     # print('index_node')
     # print(f'computing index node {fArgs}')
-    indexedObject=fArgs[0]
+    
+    indexedObject=fArgs[0] 
     indices=[f[0] for f in fArgs[1:]]
 
     if is_callable(fArgs[0]) and fArgs[0] == getitem:
@@ -444,25 +445,13 @@ def index_node(fArgs,accum=ACCUM_LOAD,getFunc=get_call_or_false):
     
     # print(f'{indexedObject} is indexedObject')
     # print(f'{dump(accum)} is accum')
+    
     optimizedIndexedObject=optimize_rec(indexedObject,accum) # Should just be a mirror
     optimizedIndices=[optimize_rec(i,accum) if is_f_arg_for_node(i) \
                       else i for i in indices]
     optimizedIndicesNodes=[index_val_node(index) for index in optimizedIndices]
 
-    # Actually, since the slice is now a Call, we don't need this, so let's try
-    # commenting it out.
-    '''
-    if optimizedIndicesNodes \
-       and isinstance(optimizedIndicesNodes[0],Slice):
-
-        # You need to make this more general - the syntax for indexing and slicing
-        # is not coherent.
-
-        return Subscript(value=optimizedIndexedObject,
-                         slice=optimizedIndicesNodes[0],
-                         ctx=Load())
-    '''
-
+    
     # print('callable_node_with_args')
     # print(f'{[dump(n) for n in optimizedIndicesNodes]} is optimizedIndicesNodes')
     # print(f'{dump(optimizedIndexedObject)} is optimizedIndexedObject')
@@ -785,6 +774,22 @@ def dict_merge_node(fArgs,
     optimizedFArg=optimize_rec(fArg,accum)
 
     return callable_node_with_args(dct_merge,
+                                   [accum,
+                                    optimizedFArg])
+
+
+##############
+# DEEP MERGE #
+##############
+
+def deep_merge_node(fArgs,
+                    accum=ACCUM_LOAD,
+                   ):
+
+    fArg=fArgs[1]
+    optimizedFArg=optimize_rec(fArg,accum)
+
+    return callable_node_with_args(dct_merge_deep,
                                    [accum,
                                     optimizedFArg])
 
@@ -1159,7 +1164,8 @@ SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_reduce,reduce_node),
               (is_quote,quote_node),
               (is_closure,closure_node),
-              (is_assign,assign_node)]
+              (is_assign,assign_node),
+              (is_deep_merge,deep_merge_node)]
 OPTIMIZE_PAIRS=[(is_callable,callable_node),
                 (is_index,index_node)]+SHARED_PAIRS
 LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),

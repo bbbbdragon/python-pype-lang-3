@@ -46,11 +46,12 @@ build_dict='BUILD_DICT'
 assoc='DICT_ASSOC'
 merge='DICT_MERGE'
 dissoc='DICT_DISSOC'
-l='BUILD_LS'
+build_list='BUILD_LS'
 append='LIST_APPEND'
 concat='LIST_CONCAT'
 while_loop='WHILE_LOOP'
 closure='PYPE_CLOSURE'
+deep_merge='DEEP_MERGE'
 do='FARG_DO'
 LIST_ARGS=set([embedded_pype,
                build_dict,
@@ -120,20 +121,22 @@ def is_map(fArg):
 
 def is_reduce(fArg):
 
-    # print('*'*30)
-    # print('is_reduce')
-    # print('{} is fArg'.format(fArg))
-    # print('is list fArg {}'.format(is_list(fArg)))
-    # print('len {}'.format(len(fArg) == 1 or len(fArg) == 2))
-    # print('is tuple {}'.format(is_tuple(fArg[0])))
-    # print('len fArg {}'.format(len(fArg[0]) == 1))
-    # print('is_f_arg {}'.format(is_f_arg(fArg[0][0])))
+    '''
+    print('*'*30)
+    print('is_reduce')
+    print('{} is fArg'.format(fArg))
+    print('is list fArg {}'.format(is_list(fArg)))
+    print('len {}'.format(len(fArg) == 1 or len(fArg) == 2))
+    print('is tuple {}'.format(is_tuple(fArg[0])))
+    print('len fArg {}'.format(len(fArg[0]) == 1))
+    print('is_f_arg {}'.format(is_f_arg(fArg[0][0])))
+    '''
 
     return is_list(fArg) \
         and (len(fArg) >= 1 and len(fArg) <= 3) \
         and is_tuple(fArg[0]) \
-        and len(fArg[0]) == 1 \
-        and is_f_arg(fArg[0][0]) 
+        and len(fArg[0]) == 1 
+        # and is_f_arg(fArg[0][0]) 
 
 
 ###############
@@ -273,6 +276,19 @@ def is_dict_merge(fArg):
         and is_string(fArg[0]) and fArg[0] in DICT_MERGE_ARGS 
 
 
+##############
+# MERGE DEEP #
+##############
+
+DEEP_MERGE_ARGS=set([deep_merge])
+
+def is_deep_merge(fArg):
+
+    return is_list(fArg) \
+        and len(fArg) == 2 \
+        and is_string(fArg[0]) and fArg[0] in DEEP_MERGE_ARGS
+    
+
 ##########
 # DISSOC #
 ##########
@@ -290,7 +306,7 @@ def is_dict_dissoc(fArg):
 # LIST BUILD #
 ##############
 
-LIST_BUILD_ARGS=set([l])
+LIST_BUILD_ARGS=set([build_list])
 
 def is_list_build(fArg):
 

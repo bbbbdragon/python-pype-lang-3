@@ -45,21 +45,27 @@ def read_grammar(grammarString):
     We read the grammar string and convert it into a JSON of the form 
     {rhs1:{rhs2:lhs,...},...}
 
-    _.splitlines,
+     _.splitlines,
 
     This splits the grammar string by line.
 
-    {_},
+     {_},
 
     {} indicates we are filtering over a list, and including whatever elements in 
     the list evaluate as true.  Since _ is a string, and an empty string evaluates as
     false, this filters out any empty strings.
 
-    [_.split],
-    [{'lhs':_0,
-      'rhs1':_1,
-      'rhs2':_2}],
-    
+     [_.split],
+
+    Split the strings by space.
+
+
+     [(zip_to_dict,_,'lhs','rhs1','rhs2')],
+
+    Build a dictionary from each tuple, with 'lhs' keying the first element
+    of the tuple, 'rhs1' keying the second element of each tuple, and 'rhs2'
+    keying the third.
+
     This splits each line into tuples of 3.  The first is assigned to the 'lhs' in
     the dictionary.  The second is 'rhs1'.  The third is 'rhs2'.
 
@@ -91,9 +97,7 @@ def read_grammar(grammarString):
     (_.splitlines,
      {_},
      [_.split],
-     [{'lhs':_0,
-       'rhs1':_1,
-       'rhs2':_2}],
+     [(zip_to_dict,_,'lhs','rhs1','rhs2')],
      (merge_ls_dct,_,'rhs1'),
      [(merge_ls_dct,_,'rhs2')],
      [[_0]],
@@ -170,9 +174,11 @@ def partitions(seq):
 
      (cartesian,spans,iBegin1s,partitions),
 
-    We want to map these tuples to dictionariesL
+    We want to map these tuples to dictionaries, where 'span' keys the first
+    tuple, 'begin1' keys the second tuple, and 'partition' keys the third
+    tuple:
 
-     (zip_to_dicts,_,'span','begin1','partition'),
+     [(zip_to_dict,_,'span','begin1','partition')],
 
     Finally, we want to build partitions as dictionaries:
 
@@ -211,7 +217,7 @@ def partitions(seq):
                       [(range_list,0,seqLen-_)],
                       flatten_list),
      (cartesian,spans,begin1s,partitions),
-     (zip_to_dicts,_,'span','begin1','partition'),
+     [(zip_to_dict,_,'span','begin1','partition')],
      [a('end1',_.begin1 + _.partition)],
      [a('begin2',_.end1 + 1)],
      [a('end2',_.begin1 + _.span)],
@@ -240,13 +246,12 @@ def apply_partition_for_grammar(table,ptn,grammar):
     rhs1 and rhs2 are recalled from the tables.  lhs is taken from the grammar.
     If the rhs1-rhs2 pair aren't in the grammar, lhs is False.
 
-     iff(lhs,(dct_merge_vals,_,
-                             {begin1:{end2:{'lhs':lhs,
-                                            'tree':l(lhs,
-                                                     rhs1.tree,
-                                                     rhs2.tree)}}})),
+     iff(lhs,dm({begin1:{end2:{'lhs':lhs,
+                               'tree':l(lhs,
+                                        rhs1.tree,
+                                        rhs2.tree)}}})),
 
-    The iff returns the original table if lhs is False.  dct_merge_vals
+    The iff returns the original table if lhs is False.  dm is a macro that
     does a deep merge of the table, so that the dict with any begin key
     can have multiple end keys.
 
@@ -257,17 +262,16 @@ def apply_partition_for_grammar(table,ptn,grammar):
 
     The lhs is a string for the new lhs.  The tree is a list containing the
     lhs, and the trees for rhs1 and rhs2.
-    '''
+    '''    
     (begin1 << ptn.begin1,
      end2 << ptn.end2,
      rhs1 << _[begin1,ptn.end1],
      rhs2 << _[ptn.begin2,end2],
      lhs << grammar[rhs1.lhs,rhs2.lhs],
-     iff(lhs,(dct_merge_vals,_,
-                             {begin1:{end2:{'lhs':lhs,
-                                            'tree':l(lhs,
-                                                     rhs1.tree,
-                                                     rhs2.tree)}}})),
+     iff(lhs,dm({begin1:{end2:{'lhs':lhs,
+                               'tree':l(lhs,
+                                        rhs1.tree,
+                                        rhs2.tree)}}})),
     )
 
 

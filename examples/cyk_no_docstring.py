@@ -54,7 +54,6 @@ def partitions(seq):
      [a('end1',_.begin1 + _.partition)],
      [a('begin2',_.end1 + 1)],
      [a('end2',_.begin1 + _.span)],
-     [d('partition')],
      {_.begin2 <= _.end2},
      unique_dcts,
      (sort_by_keys,_,'span','begin1'),

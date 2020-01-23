@@ -172,19 +172,19 @@ def partitions(seq):
 
     We want to map these tuples to dictionariesL
 
-     (zip_to_dicts,_,'span','i1Begin','partition'),
+     (zip_to_dicts,_,'span','begin1','partition'),
 
     Finally, we want to build partitions as dictionaries:
 
-     [a('i1End',_.i1Begin + _.partition)],
-     [a('i2Begin',_.i1End + 1)],
-     [a('i2End',_.i1Begin + _.span)],
+     [a('end1',_.begin1 + _.partition)],
+     [a('begin2',_.end1 + 1)],
+     [a('end2',_.begin1 + _.span)],
 
     Get rid of the 'partition' field, and filter out every partition where
-    the 'i2Begin' field is greater than the 'i2End' field:
+    the 'begin1' field is greater than the 'end2' field:
 
      [d('partition')],
-     {_.i2Begin <= _.i2End},
+     {_.begin2 <= _.end2},
 
     Get only the unique dictionaries, and sort by their span, and then their
     i1Begin.
@@ -215,7 +215,6 @@ def partitions(seq):
      [a('end1',_.begin1 + _.partition)],
      [a('begin2',_.end1 + 1)],
      [a('end2',_.begin1 + _.span)],
-     [d('partition')],
      {_.begin2 <= _.end2},
      unique_dcts,
      (sort_by_keys,_,'span','begin1'),

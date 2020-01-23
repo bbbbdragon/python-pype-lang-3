@@ -848,22 +848,6 @@ def f1(js):
 
 f1({'c':4}) <=> {'a':4,'b':6,'c':4}
 ```
-
-## Dict Merge
-`m(<mapping|fArg>)`
-
-This merges a mapping or an fArg that returns a mapping with the accum, which should also be a mapping:
-```
-from pype import m
-
-def f1(js):
-
-    (m({'b':4}),
-    )
-
-f1({'a':2}) <=> {'a':2,'b':4}
-```
-
 ## Dict Dissoc
 `d(<expression|fArg>,+)`
 
@@ -880,6 +864,52 @@ def f1(js):
 f1({'a':1,'b':2,'c':3}) <=> {'c':3}
 ```
 
+
+## Dict Merge
+`m(<mapping|fArg>)`
+
+This merges a mapping or an fArg that returns a mapping with the accum, which should also be a mapping:
+```
+from pype import m
+
+def f1(js):
+
+    (m({'b':4}),
+    )
+
+f1({'a':2}) <=> {'a':2,'b':4}
+```
+
+## Deep Merge
+`dm(<mapping|fArg>)`
+
+This does the same thing as a dict merge, except for embedded dicitonaries.  It is syntactic sugar for the following funciton in `pype3/helpers.py`:
+```
+dct1={'a':{'b':{'c':1},'d':{'e':1,'f':2}},'g':1}
+dct2={'a':{'b':{'c':5,'e':6},'d':{'e':2,'f':2}}}
+
+dct_merge_deep(dct1,dct2) <=> {'a': {'b': {'c': 5, 'e': 6}, 'd': {'e': 2, 'f': 2}}, 'g': 1}
+```
+Notice that {'c':1} becomes {'c': 5, 'e': 6} in the merge.  The existing value
+of 'c' was replaced, and a new value 'e' has been added.
+
+The function works according to the following rules:
+
+1) If there is a key-value pair in dct2 that is not in dct1, add that key-value pair to dct1.
+2) If there is a key-value pair in dct1 that is in dct2, and both are dictionaries, replace that key-value pair in dct1 with the results of dct_merge_deep for those values.
+3) If there is a key-value pair in dct1 that is in dct2, and the values are not dictionaries, the value is the value for dct2.
+
+Here is how it works in pype:
+```
+from pype import dm
+
+def f1(js):
+
+    (dm({'a':{'b':{'c':5,'e':6},'d':{'e':2,'f':2}}})
+    )
+
+f1({'a':{'b':{'c':1},'d':{'e':1,'f':2}},'g':1}) <=> {'a': {'b': {'c': 5, 'e': 6}, 'd': {'e': 2, 'f': 2}}, 'g': 1}
+```
 
 ## Embedded Pype
 `ep(fArg,+)`

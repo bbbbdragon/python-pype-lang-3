@@ -1169,7 +1169,7 @@ val2=some_other_pype_func(js2)
 However, pype's natural habitat is a microservice, so you're going to see/write a lot of code like this:
 ```
 from pype import pype as p
-from pype import _d as db # dict build
+from pype import  db # dict build
 from flask import request, jsonify
 
 @app.route('/add',methods=['POST'])

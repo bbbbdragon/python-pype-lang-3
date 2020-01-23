@@ -1,7 +1,7 @@
 '''
 python3 watch_file.py -p2 python3 assigns_closures_and_quotes.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
-from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,tup,db,a,iff,d,ift,squash,ifp
+from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,db,a,iff,d,ift,squash,ifp
 from pype3 import cl
 from pype3.time_helpers import *
 from pype3.helpers import *

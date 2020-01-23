@@ -4,7 +4,7 @@ python3 callables_and_lambdas.py
 python3 watch_file.py -p2 python3 callables_and_lambdas.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
-from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp
+from pype3 import ep,db,a,iff,d,ift,squash,ifp
 # import sys 
 # import json
 from pype3.time_helpers import *

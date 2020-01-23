@@ -4,7 +4,7 @@ python3 dict_and_list_operations.py
 python3 watch_file.py -p2 python3 dict_and_list_operations.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last,c
-from pype3 import ep,tup,db,a,iff,d,ift,squash,ifp,m,change,app
+from pype3 import ep,db,a,iff,d,ift,squash,ifp,m,change,app,l
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
@@ -109,10 +109,10 @@ def dict_build_std(ls):
 
 def simple_ls_build(a,b):
     '''
-    This demonstrates the list build function tup, which creates a tuple of
+    This demonstrates the list build function l, which creates a list of
     its arguments.
     '''
-    (tup(a,b),
+    (l(a,b),
     )
 
 
@@ -122,7 +122,7 @@ def dct_ls_build(js):
     transformations on both the key and the pair.
     '''
     (dct_items, # Gets a list of key-value tuples.
-     [tup('s'+_0,_1*100)], # Prepend 's' to the key, and multiply value by 100
+     [l('s'+_0,_1*100)], # Prepend 's' to the key, and multiply value by 100
     )
 
 
@@ -178,7 +178,7 @@ if __name__=='__main__':
     print(dict_build_std(ls))
 
     print('*'*30)
-    print('dict builds')
+    print('list builds')
     print('*'*30)
 
     print('simple_ls_build(1,2)')

@@ -106,7 +106,7 @@ from pype import pypeify_namespace,p,_
 
 def say_hello(myName):
 
-    ('Hello ' + _ ', welcome to pype!',
+    ('Hello ' + _ + ', welcome to pype!',
     )
 
 pypeify_namespace(globals())

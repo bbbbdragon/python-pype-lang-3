@@ -121,8 +121,10 @@ Before wading into the documentation, it may be a good idea to look at the `exam
 
 Other examples demonstrate how to implement recursion in pype, and how to build simple microservices in the language, including Machine Learning services:
 
-* recursive quicksort - `examples/quicksort.py`
-* recursive Fibonacci - `examples/fibonacci.py`
+* `examples/quicksort.py` - recursive quicksort 
+* `examples/fibonacci.py` - recursive Fibonacci
+* `examples/cyk.py` - A purely functional implementation of the CYK parsing algorithm.
+* `examples/cyk_no_docstring.py` - `examples/cyk.py` with the docstrings stripped out to demonstrate pype3's conciseness.
 
 To run any of these files from a command line, just type in the quoted command at the beginning of the file.  For example, `quicksort.py` can be run by typing:
 ```

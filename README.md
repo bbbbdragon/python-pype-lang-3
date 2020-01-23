@@ -1134,7 +1134,7 @@ js2=deepcopy(js1)
 val1=some_pype_func(js1)
 val2=some_other_pype_func(js2)
 ```
-Howevwer, pype's natural habitat is a microservice, so you're going to see/write a lot of code like this:
+However, pype's natural habitat is a microservice, so you're going to see/write a lot of code like this:
 ```
 from pype import pype as p
 from pype import _d as db # dict build

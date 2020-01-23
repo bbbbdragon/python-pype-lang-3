@@ -95,15 +95,8 @@ pypeify_namespace(globals())
 
 if __name__=='__main__':
 
-    '''
     seq=['Det','N','V','Det','N']
     grammar=read_grammar(GRAMMAR_STRING)
     prs=parse(seq,grammar)
 
     pp.pprint(prs)
-    '''
-
-    dct1={'a':{'b':{'c':1},'d':{'e':1,'f':2}},'g':1}
-    dct2={'a':{'b':{'c':5,'e':6},'d':{'e':2,'f':2}}}
-
-    pp.pprint(dct_merge_deep(dct1,dct2))

@@ -1,13 +1,14 @@
 '''
-python3 cyk.py 
+python3 cyk_no_docstring.py 
 
-python3 watch_file.py -p2 python3 cyk.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 cyk_no_docstring.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
-from pype3 import ep,l,db,a,iff,d,ift,iftp,squash,ifp,cl
+from pype3 import ep,l,db,a,iff,d,ift,iftp,squash,ifp,cl,dm
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
+from pype3.type_checking import *
 
 GRAMMAR_STRING='''
 NP Det N
@@ -20,9 +21,7 @@ def read_grammar(grammarString):
     (_.splitlines,
      {_},
      [_.split],
-     [{'lhs':_0,
-       'rhs1':_1,
-       'rhs2':_2}],
+     [(zip_to_dict,_,'lhs','rhs1','rhs2')],
      (merge_ls_dct,_,'rhs1'),
      [(merge_ls_dct,_,'rhs2')],
      [[_0]],
@@ -50,7 +49,7 @@ def partitions(seq):
                       [(range_list,0,seqLen-_)],
                       flatten_list),
      (cartesian,spans,begin1s,partitions),
-     (zip_to_dicts,_,'span','begin1','partition'),
+     [(zip_to_dict,_,'span','begin1','partition')],
      [a('end1',_.begin1 + _.partition)],
      [a('begin2',_.end1 + 1)],
      [a('end2',_.begin1 + _.span)],
@@ -59,7 +58,8 @@ def partitions(seq):
      (sort_by_keys,_,'span','begin1'),
     )
 
-
+        
+                
 def apply_partition_for_grammar(table,ptn,grammar):
     
     (begin1 << ptn.begin1,
@@ -67,11 +67,10 @@ def apply_partition_for_grammar(table,ptn,grammar):
      rhs1 << _[begin1,ptn.end1],
      rhs2 << _[ptn.begin2,end2],
      lhs << grammar[rhs1.lhs,rhs2.lhs],
-     iff(lhs,(dct_merge_vals,_,
-                             {begin1:{end2:{'lhs':lhs,
-                                            'tree':l(lhs,
-                                                     rhs1.tree,
-                                                     rhs2.tree)}}})),
+     iff(lhs,dm({begin1:{end2:{'lhs':lhs,
+                               'tree':l(lhs,
+                                        rhs1.tree,
+                                        rhs2.tree)}}})),
     )
 
 
@@ -96,8 +95,15 @@ pypeify_namespace(globals())
 
 if __name__=='__main__':
 
+    '''
     seq=['Det','N','V','Det','N']
     grammar=read_grammar(GRAMMAR_STRING)
     prs=parse(seq,grammar)
 
     pp.pprint(prs)
+    '''
+
+    dct1={'a':{'b':{'c':1},'d':{'e':1,'f':2}},'g':1}
+    dct2={'a':{'b':{'c':5,'e':6},'d':{'e':2,'f':2}}}
+
+    pp.pprint(dct_merge_deep(dct1,dct2))

@@ -1050,7 +1050,7 @@ dctLS=[{'name':'bobo','payment':20},
        {'name':'bob','payment':50},
        {'name':'susan','payment':10}]
 
-sort_by_key(dctLS,'payment') =>
+sort_by_key(dctLS,'payment') <=>
 [{'name':'susan','payment':10},
  {'name':'bobo','payment':20},
  {'name':'bob','payment':30},
@@ -1062,8 +1062,8 @@ In this case, `ls` is a list of tuples or lists, and `index` is just an integer 
 ```
 ls=[(1,4),(-1,5),(2,3)]
     
-sort_by_index(ls,0) => [(-1,5),(1,4),(2,3)]
-sort_by_index(ls,1) => [(2,3),(1,4),(-1,5)]
+sort_by_index(ls,0) <=> [(-1,5),(1,4),(2,3)]
+sort_by_index(ls,1) <=> [(2,3),(1,4),(-1,5)]
 ```
 
 ## Style
@@ -1153,7 +1153,6 @@ ls=[[1,2,3,3],[2,2]]
 
 f1(ls) <=> [[2,3,4,4],[3,3]]
 ```
-
 ## Immutability
 
 Unfortunately, for performance reasons, we cannot ensure immutability.  This is because many of the dictionary operations act on the original dictionary passed to pype, rather than a copy of it.  Unlike the ultra-light lists and dictionaries of Clojure, Python simply cannot remain performant while creating new dictionaries or lists with every expression.  Therefore, if you are going to call pype more than once on the same data structure, you should use a deepcopy to ensure you are working on the same data.

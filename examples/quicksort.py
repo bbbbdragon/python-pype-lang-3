@@ -1,11 +1,12 @@
 '''
 python3 quicksort.py
 
-python3 watch_file.py -p1 python3 quicksort.py  -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 quicksort.py -p1 ./reinstall_from_source.sh  -d /Users/bennettbullock/python-pype-lang-3
 '''
-from pype3 import p,pypeify_namespace
-from pype3 import _,iff
+from pype3 import p,pypeify_namespace,pypeify
+from pype3 import _,iff,tup,l
 from pype3.helpers import middle
+from pype3.func_helpers import to_int
 
 def qs0(ls):
     '''
@@ -25,7 +26,7 @@ def qs0(ls):
     apply the function to this list.  
     
 
-              [pivot]
+              l(pivot)
 
     This constructs a singleton list with pivot.
 
@@ -41,7 +42,7 @@ def qs0(ls):
     pivot=middle(ls)
 
     (ls,
-     {len:(qs0,{_ < pivot}) + [pivot] + (qs0,{_ > pivot}),
+     {len:(qs0,{_ < pivot}) + l(pivot) + (qs0,{_ > pivot}),
       'else':_}
     )
 
@@ -60,7 +61,7 @@ def qs1(ls):
     pivot=middle(ls)
 
     (ls,
-     iff(len,(qs1,{_ < pivot}) + [pivot] + (qs1,{_ > pivot}))
+     iff(len,(qs1,{_ < pivot}) + l(pivot) + (qs1,{_ > pivot}))
     )
 
 
@@ -71,8 +72,33 @@ def qs2(ls):
     '''
     pivot=middle(ls)
 
-    iff(len,(qs2,{_ < pivot}) + [pivot] + (qs2,{_ > pivot})),
+    iff(len,(qs2,{_ < pivot}) + l(pivot) + (qs2,{_ > pivot})),
 
+
+def qs3(ls):
+    '''
+    Finally, we are using the assignment operator.  Notice that middle is a 
+    function called on ls.  The result is stored in the variable pivot.
+    '''
+    (pivot << middle,
+     iff(len,(qs3,{_ < pivot}) + l(pivot) + (qs3,{_ > pivot})),
+    )
+
+
+def qs4(ls):
+    '''
+    Finally, we are using the assignment operator.  Notice that middle is a 
+    function called on ls.  The result is stored in the variable pivot.
+
+    There is a bit of weirdness here.  Notice that when we are indexing for
+    pivot, we have to wrap the lambda expression in a tup.  This is because
+    the indexing automatically interprets a tuple as a set of indices, so we
+    have to wrap it in one more tuple to get it to evaluate as a lambda.
+    '''
+    (ln << len,
+     pivot << _[tup(int,ln/2)],
+     iff(ln,(qs4,{_ < pivot}) + l(pivot) + (qs4,{_ > pivot})),
+    )
 
 '''
 pypeify compiles all the functions above ...
@@ -95,5 +121,9 @@ if __name__=='__main__':
     print(qs1(ls))
 
     print('*'*30)
-    print('running qs2')
-    print(qs2(ls))
+    print('running qs3')
+    print(qs3(ls))
+
+    print('*'*30)
+    print('running qs4')
+    print(qs4(ls))

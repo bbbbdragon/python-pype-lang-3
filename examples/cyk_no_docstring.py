@@ -84,18 +84,17 @@ def apply_partitions(seq,grammar):
 
 def parse(seq,grammar):
 
-    ((apply_partitions,_,grammar),
-     finalConstituent << _[0,len-1],
-     {finalConstituent:finalConstituent.tree,
+    ((apply_partitions,_.split,grammar),
+     _[0,len-1],
+     {_:_.tree,
       'else':'No valid parse'},
     )
-
 
 pypeify_namespace(globals())
 
 if __name__=='__main__':
 
-    seq=['Det','N','V','Det','N']
+    seq='Det N V Det N'
     grammar=read_grammar(GRAMMAR_STRING)
     prs=parse(seq,grammar)
 

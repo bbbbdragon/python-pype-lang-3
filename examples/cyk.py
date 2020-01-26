@@ -22,7 +22,7 @@ To view the ability to express complex concepts concisely, you may want to take
 a look at cyk_no_docstring.py.  There, I strip out the docstrings.
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last
-from pype3 import ep,l,db,a,iff,d,ift,iftp,squash,ifp,cl
+from pype3 import ep,l,db,a,iff,d,ift,iftp,squash,ifp,cl,dm
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.vals import PypeVal as v
@@ -300,10 +300,30 @@ def apply_partitions(seq,grammar):
 
 
 def parse(seq,grammar):
+    '''
+    Main function.
 
-    ((apply_partitions,_,grammar),
-     finalConstituent << _[0,len-1],
-     {finalConstituent:finalConstituent.tree,
+     (apply_partitions,_.split,grammar),
+
+    _.split splits the string by space. (apply_partitions,_.split,grammar) is
+    a lambda called on these two arguments, producing a table.
+
+     _[0,len-1],
+
+    First, len is length of the table, also the lenght of the original sequence.
+    len-1 is the final index of the table.  We know that indexing returns False
+    if an element is not present at this index path.  Otherwise, we retrieve
+    the constituent with 'lhs' and 'tree' fields.
+
+     {_:_.tree,
+       'else':'No valid parse'},
+
+    Switch dict - if the accum evaluates as False, we return 'No valid parse',
+    otherwise we return the 'tree field of the parse.
+    '''
+    ((apply_partitions,_.split,grammar),
+     _[0,len-1],
+     {_:_.tree,
       'else':'No valid parse'},
     )
 
@@ -312,6 +332,7 @@ pypeify_namespace(globals())
 if __name__=='__main__':
 
     seq=['Det','N','V','Det','N']
+    seq='Det N V Det N'
     grammar=read_grammar(GRAMMAR_STRING)
     prs=parse(seq,grammar)
 

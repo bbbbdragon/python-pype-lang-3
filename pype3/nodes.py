@@ -658,6 +658,7 @@ def filter_list_node(fArgs,
                      loadedListElement=LOADED_LIST_ELEMENT,
                      storedListElement=STORED_LIST_ELEMENT):
 
+    
     ifAnyNode=any_node([optimize_rec(fArg,loadedListElement) for fArg in fArgs])
 
     #print('printing and filter list node')
@@ -672,6 +673,9 @@ def filter_dict_node(fArgs,
                      accum=ACCUM_LOAD,
                      loadedDictValue=LOADED_DICT_VALUE):
 
+    # print('filter_dict_node')
+    # print(f'{fArgs} is fArgs')
+
     #print('&'*30)
     #print(f'{ast.dump(accum)} is accum')
     ifAnyNode=any_node([optimize_rec(fArg,loadedDictValue) for fArg in fArgs])
@@ -683,21 +687,14 @@ def filter_dict_node(fArgs,
 
 def filter_list_or_dict_node(fArg,accum=ACCUM_LOAD):
 
-    '''
-    print('='*30)
-    print('or_filter_list_or_dict_node')
-    print(f'{fArg} is fArg')
-    print(f'{ast.dump(accum)} is accum')
+    # print('='*30)
+    # print('or_filter_list_or_dict_node')
+    # print(f'{fArg} is fArg')
+    # print(f'{ast.dump(accum)} is accum')
 
-    print('or_filter_list_or_dict_node')
-    print(f'{fArg} is fArg')
-    print(f'{accum} is accum')
-    v=if_list_or_dict(accum,
-                      fArg,
-                      or_filter_dict_node,
-                      or_filter_list_node)
-    print(f'{v} is v')
-    '''
+    # print('or_filter_list_or_dict_node')
+    # print(f'{fArg} is fArg')
+    # print(f'{accum} is accum')
 
     return if_list_or_dict(accum,
                            fArg,
@@ -1166,9 +1163,14 @@ SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_closure,closure_node),
               (is_assign,assign_node),
               (is_deep_merge,deep_merge_node)]
-OPTIMIZE_PAIRS=[(is_callable,callable_node),
+OPTIMIZE_PAIRS=[(is_bookmark,ast_name_node),
+                (is_callable,callable_node),
                 (is_index,index_node)]+SHARED_PAIRS
-LAMBDA_OPTIMIZE_PAIRS=[(is_callable,function_node),
+# ITERABLE_PAIRS=[(is_bookmark,call_name_node),
+                # (is_callable,callable_node),
+                # (is_index,index_node)]+SHARED_PAIRS
+LAMBDA_OPTIMIZE_PAIRS=[(is_bookmark,ast_name_node),
+                       (is_callable,function_node),
                        (is_index,lambda_index_node),
                       ]+SHARED_PAIRS
 

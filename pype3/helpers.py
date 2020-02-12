@@ -624,6 +624,11 @@ def zip_to_dicts(tups,*keys):
     return [dict(zip(keys,tup)) for tup in tups]
 
 
+def zip_to_dict(tup,*keys):
+
+    return dict(zip(keys,tup))
+
+
 
 def get_by_key_or_false(dct,dctKey,*keys):
 
@@ -1012,3 +1017,43 @@ def clear_empties(obj):
         return {k:v for (k,v) in obj.items() if bool(v)}
 
     return obj
+
+
+def dct_merge_deep(dct1,dct2):
+
+    if is_dict(dct1) and is_dict(dct2):
+
+        # print(f'{dct1} is dct1')
+        # print(f'{dct2} is dct2')
+
+        for (k,v) in dct2.items():
+
+            # print(f'{k} is k')
+            # print(f'{v} is v')
+
+            if k in dct1:
+
+                dct1[k]=dct_merge_deep(dct1[k],v)
+
+            else:
+
+                dct1[k]=v
+
+        # print(f'{dct1} is dct1 after')
+        # print(f'{dct2} is dct2 after')
+
+        return dct1
+
+    elif not is_dict(dct2):
+
+        return dct2
+
+    return dct1
+
+def flatten_lists(ls):
+
+    while any([is_list(el) for el in ls]):
+
+        ls=flatten_list(ls)
+
+    return ls

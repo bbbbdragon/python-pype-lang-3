@@ -848,6 +848,22 @@ def f1(js):
 
 f1({'c':4}) <=> {'a':4,'b':6,'c':4}
 ```
+
+## Embedded Dict Assoc
+`ea(<<expression1|fArg1>,<expression2|fArg2>>,+)`
+
+This macro allows you to change the values of embedded dictionary expressions.  The first arguments of ea must be the keys of the embedded dictionary, 
+and the last argument must be the value:
+```
+def f1(js,n):
+
+    (ea('a','b','c',n),
+    )
+
+js={'a':{'b':{'c':1,'d':8},'e':9}}
+
+f1(js,5) <=> {'a':{'b':{'c':5,'d':8},'e':9}}
+```
 ## Dict Dissoc
 `d(<expression|fArg>,+)`
 

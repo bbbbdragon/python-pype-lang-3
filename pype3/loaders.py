@@ -1,5 +1,5 @@
 import json
-
+import csv
 def dump_json(fileName,js):
 
     with open(fileName,'w') as f:
@@ -21,3 +21,8 @@ def load_json(fileName):
         js=json.loads(f.read())
 
         return js
+
+
+# def load_csv(fileName,delimiter=','):
+
+    

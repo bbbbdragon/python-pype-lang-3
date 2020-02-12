@@ -111,8 +111,8 @@ def is_callable(fArg):
 def is_map(fArg):
 
     return is_list(fArg) \
-        and len(fArg) > 0 \
-        and all([is_f_arg(f) for f in fArg])
+        and len(fArg) > 0 
+        # and all([is_f_arg(f) for f in fArg])
 
 
 ##########
@@ -183,20 +183,23 @@ def is_filter(fArg):
 
         return False
 
+    return True
+    '''
     # Then, we get the first element of the set ...
 
     el=next(iter(fArg))
 
-    #print(f'{el} is el')
+    # print(f'{el} is el')
 
     # Is it an fArg or a LamTup?
-
+ 
     #print(f'{is_f_arg(el)} is is_f_arg(el)')
     #print(f'{ is_lam_tup(el)} is is_lam_tup(el)')
 
     return is_f_arg(el) \
+        or is_bookmark(el) \
         or is_lam_tup(el)
-
+    '''
 
 ##############
 # DICT BUILD #
@@ -427,7 +430,7 @@ FARGS=[is_mirror,
        is_dict_dissoc,
        is_list_build,
        is_list_append,
-       # is_list_concat,
+       is_list_concat,
        is_embedded_pype,
        is_quote,
        is_do]

@@ -351,10 +351,10 @@ class Quote(object):
     '''
     def __init__(self,v):
 
-        print(f'intializing quote with v as {v}')
+        # print(f'intializing quote with v as {v}')
         self.v=v
 
-    def val(self):
+    def quote_val(self):
 
         #print('evaluating quote')
 

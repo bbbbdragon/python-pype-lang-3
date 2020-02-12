@@ -988,10 +988,11 @@ def ast_name_node(fArg,accumNode):
 def quote_node(fArg,accum=ACCUM_LOAD):
     # print('*'*30)
     # print('quote_node')
+    # print(f'{fArg} is fArg')
 
-    fArg=fArg.val()
+    fArg=fArg.quote_val()
     
-    # print(f'{fArg.val()} is fArg')
+    # print(f'{fArg} is fArg')
 
     node=optimize_rec(fArg,ACCUM_LOAD)
 
@@ -1026,6 +1027,9 @@ def closure_lambda_node(node,lambdaArgs):
 
 def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
+    # print('*'*30)
+    # print(ast.dump(accum))
+
     fArgs=fArg[1:]
     lambdaArgs=[arg(arg='closure_lambda_arg', annotation=None)]
     
@@ -1053,7 +1057,8 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
     fArgs.reverse()
 
-    closureChain=embedded_closure_chain(fArgs,accum)
+    closureChain=embedded_closure_chain(fArgs,CLOSURE_LAMBDA_ARG)
+    # closureChain=embedded_closure_chain(fArgs,accum)
 
     return closure_lambda_node(closureChain,lambdaArgs)
 

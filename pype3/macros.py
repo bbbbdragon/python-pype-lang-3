@@ -119,3 +119,20 @@ def cl(*fArgs):
 def tup(*fArgs):
 
     return fArgs,
+
+def ea(*keysAndVal):
+
+    key=keysAndVal[0]
+
+    if len(keysAndVal) == 2:
+
+        val=keysAndVal[1]
+
+        return a(key,val)
+
+    return a(key,ep(_[key],ea(*keysAndVal[1:])))
+
+
+def lm(callableFArg):
+
+    return (callableFArg,_)

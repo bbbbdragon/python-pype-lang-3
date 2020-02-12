@@ -331,7 +331,6 @@ pypeify_namespace(globals())
 
 if __name__=='__main__':
 
-    seq=['Det','N','V','Det','N']
     seq='Det N V Det N'
     grammar=read_grammar(GRAMMAR_STRING)
     prs=parse(seq,grammar)

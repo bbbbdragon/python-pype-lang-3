@@ -11,6 +11,7 @@ You can understand the basic syntactic ideas behind pype in the `python-pype-lan
 * `switch_dicts_and_embedded_pypes.py` - Examples of conditionals and embedded pypes.  These two were put into the same category because embedded pypes can define a more sophisticated control flow.
 * `dict_and_list_operations.py` - Dictionary/JSON and list manipulations.
 * `asigns_closures_and_function_args.py` - How to assign variables inside pype expressions, plus closures and passing functions as arguments.
+* `code_with_code.py` - How to use pype closures to build functions in code.  Includes examples of passing functions as arguments, when to use quotes, building complex functions from function arguments, and currying.
 
 ## What and why?
 
@@ -165,7 +166,21 @@ Examples of pype microservices soon to come.
 
 * "Can you dynamically generate pype code"
 
-Theoretically, yes, you can, because fArgs are just native Python, so you could generate your fArgs programmatically somehow, and then feed them to pype as varargs.  The real question is, can you use pype itself to generate these expressions.  At this point, I am not sure.  I am working on a "quote" fArg, which prevents the fArg from being evaluated by the interpreter.  This is necessary for situations where you have functions that pass other functions as arguments - pype as described above would evaluate those functions on the accum first.  But I have not tried this.  I'm not a world-moving genius like John McCarthy (although my Mom's name is McCarthy, so I guess her side of the family isn't all cops, salesmen, and real estate dealers), but more to the point, pype arose naturally out of my need to write programs faster, rather than a theoretical concern, so I went at the things I needed and wanted before the things that were theoretically important.    
+Previously, I remained rather mute on this topic, saying it was theoretically possible.  However, now I am ready to speak - 'yes!' x 1000. There are two ways you can do this.
+
+First, you can write a function that returns a raw pype expression.  `macros.py` are several examples of some code shorthands for common operations.  For example, the `iff(condidtion,expression)` macro returns the evaluated fArg in `expression` if `condition` evaluates as true, otherwise it returns the accum.  You will notice that certain operations, such as list builds have a short macro like `l`.  But if you evaluate them in python, you will find they're much, much uglier:
+```
+>>> from pype3.macros import *
+from pype3.macros import *
+>>> from pype3 import _,_0
+from pype3 import _,_0
+>>> l(4,3)
+l(4,3)
+['BUILD_LS', 4, 3]
+```
+We can identify a macro by the fact that it is a Python function call, not an fArg.  During a certain stage in compilation, `l(4,3)` is called as a Python function, which returns `['BUILD_LS', 4, 3]`.  This latter expression is then converted into an Abstract Syntax Tree.
+
+Secondly, you can use closures.  The `code_with_code.py` tutorial will explain to you how to do this, but the general idea is that, when you want a function to build another function, you have the pype expression return a closure as the final argument.  
 
 # Overview
 
@@ -271,13 +286,27 @@ from pype import pype
 
 add1=lambda x:x+1
 
-def f(n):
+def f1(n):
 
    (add1,
    )
 
-f(1) <=> 2
+f1(1) <=> 2
 ~~~~
+In certain inconvenient contexts, especially where you have dynamically created a function which the compiler cannot yet see is callable, you may have to convert a function into a lambda.  A macro for this is the `lm` macro:
+```
+def f2(n):
+
+   ((add1,_),
+   )
+
+def f3(n):
+
+   (lm(add1),
+   )
+
+f1(1) <=> f2(1) <=> f3(1) <=> 2
+```
 ## Mirrors
 
 `_`
@@ -984,6 +1013,23 @@ def f1(n):
 ```
 When we assign a variable, the accum in the next expression is not changed at all.  All this means is that when we refer to this symbol further down in the pype tuple, we have already evaluated it.
 
+## Quotes
+`q(callableFArg)`
+When you need to pass a callable into another function as an argument, you should use this:
+```
+from pype3.vals import Quote as q
+
+def f1(n,f2):
+   ((f2,_), # f2(n)
+   )
+   
+def f2(n):
+
+   ((f1,_,q(add1)),
+   )
+   
+f2(1) <=> f1(1,add1) <=> add1(1) <=> 1
+```
 ## Closures
 `cl(<fArg|expression>,+)|cl([varName,varName,*],<fArg|expression>,+)`
 
@@ -995,8 +1041,6 @@ def f1(n):
      (f,_), # f(n) <=> add1(add1(add1(n)))   
     )
 ```
-I am still working on this, but from what I can tell, this can be used to build pype functions from other pype functions.
-
 The second type of closure takes a list of arguments of varNames, followed by fArgs.  These do not need to be declared previously - they are the parameters of the closure.  Inside the closure, _ in the first fArg will stand in for the first parameter.
 ```
 def f1(n):
@@ -1006,6 +1050,62 @@ def f1(n):
              _+1), # sm(x,y)+1
      (f,_,2), # sm(n,2)+1
     )        
+```
+You can also pass closures into other functions.  This is similar to quotes, except you can define these functions on the fly, similar to how lambdas are used in Python:
+```
+def f1(n,f2):
+ 
+    (_+f2, # n + f2(n)
+    )
+    
+def f3(n):
+ 
+    ((f1,_,cl(_*8,_+4)), # n + f2(n)
+    )
+    
+f3(2) <=> f1(2,lambda x: x*8+4) <=> 2 + 2*8 + 4 <=> 22
+```
+However, if you chose to do this, try to include non-callable fArgs in your closure, and use the quote function for callable fArgs.
+
+If you chose to compose closures with functions that are defined in the main function parameters or in a previous assignment, you will need to use them in lambdas - the `lm` macro facilitates this.  This is because the compiler cannot yet see whether a single name is callable or not:
+```
+def f1(n):
+ 
+    (_*2, # n*2
+    )
+
+def f3(n,f1):
+
+    (f3 << cl(f1,_+2), # THIS WILL NOT WORK!
+     (f3,_,2), 
+    )        
+
+def f3(n,f1):
+
+    (f3 << cl(lm(f1),_+2), # this will
+     (f3,_,2), 
+    )        
+
+f3(4) <=> (lambda x: f1(x) + 2)(4) <=> f1(4) + 2 <=> 4*2 + 2 <=> 10
+```
+Finally, you can return closures from pype functions.  The `code_with_code.py` tutorial will give you some pointers on how to do this, but here is an example:
+```
+def f1(n):
+
+    (_+1,
+    )
+
+def f2(n):
+
+    (_*2,
+    )
+
+def build_f3(f1,f2):
+
+    (cl(lm(f1) + lm(f2)),
+    )
+    
+build_f3(f1,f2)(2) <=> (lambda x: f1(x) + f2(x))(2) <=> f1(2) + f2(2) <=> (2+1) + (2*2) <=> 3 + 4 <=> 7
 ```
 ## Pype Helpers
 

@@ -1,5 +1,7 @@
 from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_list,build_dict,merge,closure,_,deep_merge
+from pype3.fargs import is_map,is_filter
 from pype3.helpers import dct_dissoc,dct_assoc,dct_merge
+from pype3.func_helpers import deep_map,deep_filter
 
 ##########
 # MACROS #
@@ -155,3 +157,44 @@ def ifta(*fArgs):
         return is_true(fArgs[0])
 
     return ift(fArgs[0],ifta(*fArgs[1:]))
+
+
+def dp(fArg,verify=None):
+
+    if is_map(fArg):
+
+        fArg=fArg[0]
+
+        if verify is None:
+
+            return (deep_map,_,fArg)
+
+        else:
+
+            return (deep_map,_,fArg,verify)
+
+    if is_filter(fArg):
+        
+        fArg=next(iter(fArg))
+
+        return (deep_filter,_,fArg)
+
+    if is_reduce(fArg):
+
+        reduceFArg=fArg[0][0]
+        
+        '''
+        if len(fArgs) == 2:
+
+            iterable=fArgs[1]
+
+            return (reduce_deep,_,_,reduceFArg)
+        '''
+        if len(fArgs) == 3:
+
+            startVal=fArgs[1]
+            iterable=fArgs[2]
+
+            return (reduce_deep,startVal,_,reduceFArg)
+
+    return None

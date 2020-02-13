@@ -4,7 +4,7 @@ python3 deep.py
 python3 watch_file.py -p2 python3 deep.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,_last,cl,ifa,ifta
-from pype3 import ep,db,a,iff,d,ift,squash,ifp
+from pype3 import ep,db,a,iff,d,ift,squash,ifp,dp
 from pype3.time_helpers import *
 from pype3.helpers import *
 from pype3.func_helpers import *
@@ -68,6 +68,14 @@ def deep_map_ifta(js):
     )
 
 
+def deep_map_short(js):
+
+    (transform << cl(ifa(is_string,
+                         ('good' >> _),
+                         _+' yes')),
+     dp([transform]),
+    )
+
 ################
 # DEEP FILTERS #
 ################
@@ -80,10 +88,18 @@ def deep_filter_ifta(js):
     )
 
 
+def deep_filter_short(js):
+
+    (fil << cl(ifta(is_int,
+                    _ > 2)),
+     dp({fil}),
+    )
+
 ################
 # DEEP REDUCES #
 ################
 
+# @pypeify(verbose=True)
 def deep_reduce_count(js):
     '''
     aug << cl([s,x],
@@ -96,10 +112,20 @@ def deep_reduce_count(js):
     Is this an integer?
     '''
     (aug << cl([s,x],
-               s+x),
+               _+x),
      verify << cl(is_int),
      (deep_reduce,0,_,aug,verify),
     )
+
+
+'''
+def deep_reduce_short(ls):
+    (aug << cl([s,x],
+               _+x),
+     verify << cl(is_int),
+     dp([(aug,),0,_]),
+    )
+'''
 
 
 pypeify_namespace(globals())
@@ -134,9 +160,22 @@ if __name__=='__main__':
 
     print('deep_map_ifta(js)')
     print(deep_map_ifta(js))
+    
+    print('deep_map_short(js)')
+    print(deep_map_short(js))
+
+    print('*'*30)
+    print('deep filters')
+    print('*'*30)
 
     print('deep_filter_ifta(js)')
     print(deep_filter_ifta(js))
 
+    print('deep_filter_short(js)')
+    print(deep_filter_short(js))
+
     print('deep_reduce_count(js)')
     print(deep_reduce_count(js))
+
+    print('deep_reduce_short(js)')
+    print(deep_reduce_short(js))

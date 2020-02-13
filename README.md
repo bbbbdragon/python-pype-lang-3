@@ -12,7 +12,7 @@ You can understand the basic syntactic ideas behind pype in the `python-pype-lan
 * `dict_and_list_operations.py` - Dictionary/JSON and list manipulations.
 * `asigns_closures_and_function_args.py` - How to assign variables inside pype expressions, plus closures and passing functions as arguments.
 * `code_with_code.py` - How to use pype closures to build functions in code.  Includes examples of passing functions as arguments, when to use quotes, building complex functions from function arguments, and currying.
-
+* `deep.py` - How to perform maps, reduces, and filters on embedded data structures such as JSON's, using closures.
 ## What and why?
 
 In the winter of 2017, I was a run-of-the-mill Python Data-Scientist/Code Monkey/Script Kiddie, rocking pandas, scikit-learn, numpy, and scipy.  I began to get bored of Python's imperative style, especially a particularly nasty anti-pattern that appears across many Python scripts and Jupyter notebooks.  What happens is, I'm applying a whole bunch of operations to a single variable:

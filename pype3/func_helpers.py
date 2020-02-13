@@ -21,6 +21,85 @@ def map_deep(obj,verify,transform):
     return obj
 
 
+def deep_map(obj,transform,verify=None):
+ 
+    if verify is not None and verify(obj):
+
+        return transform(obj)
+
+    if is_list(obj):
+
+        return [deep_map(el,transform,verify) for el in obj]
+
+    if is_dict(obj):
+
+        return {k:deep_map(v,transform,verify) for (k,v) in obj.items()}
+
+    if verify is not None and not verify(obj):
+
+        return obj
+
+    if verify is None:
+
+        return transform(obj)
+
+
+def deep_filter(obj,verify):
+
+    if verify(obj):
+
+        return obj
+
+    if is_list(obj):
+
+        ls=[deep_filter(el,verify) for el in obj]
+        ls=[el for el in ls if el]
+
+        if ls:
+
+            return ls
+
+    if is_dict(obj):
+
+        dct={k:deep_filter(el,verify) for (k,el) in obj.items()}
+        dct={k:el for (k,el) in dct.items() if el}
+
+        if dct:
+
+            return dct
+
+    return False
+
+
+def deep_reduce(accumulator,obj,transform,verify=None):
+
+    if verify is not None and verify(obj):
+
+        return transform(accumulator,obj)
+
+    if is_list(obj):
+
+        return reduce(transform,
+                      [deep_reduce(accumulator,el,transform,verify) \
+                       for el in obj],
+                      accumulator)
+
+    if is_dict(obj):
+
+        return reduce(transform,
+                      [deep_reduce(accumulator,el,transform,verify) \
+                       for (k,el) in obj.items()],
+                      accumulator)
+
+    if verify is not None and not verify(obj):
+
+        return accumulator
+
+    if verify is None:
+
+        return transform(accumulator,obj)
+
+
 def reduce_deep(accumulator,obj,transform,empty,verify=None):
 
     if verify is not None and verify(obj):
@@ -44,31 +123,6 @@ def reduce_deep(accumulator,obj,transform,empty,verify=None):
     return empty(obj)
 
 
-def filter_deep(obj,verify):
-
-    if verify(obj):
-
-        return obj
-
-    if is_list(obj):
-
-        ls=[filter_deep(el,verify) for el in obj]
-        ls=[el for el in ls if el]
-
-        if ls:
-
-            return ls
-
-    if is_dict(obj):
-
-        dct={k:filter_deep(el,verify) for (k,el) in obj.items()}
-        dct={k:el for (k,el) in dct.items() if el}
-
-        if dct:
-
-            return dct
-
-    return False
         
 
 def to_type(x,defaultVal,f):

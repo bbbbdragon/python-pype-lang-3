@@ -120,6 +120,7 @@ def tup(*fArgs):
 
     return fArgs,
 
+
 def ea(*keysAndVal):
 
     key=keysAndVal[0]
@@ -136,3 +137,21 @@ def ea(*keysAndVal):
 def lm(callableFArg):
 
     return (callableFArg,_)
+
+
+def ifa(*fArgs):
+
+    if len(fArgs) == 1:
+
+        return fArgs[0]
+
+    return iff(fArgs[0],ifa(*fArgs[1:]))
+
+
+def ifta(*fArgs):
+
+    if len(fArgs) == 1:
+
+        return is_true(fArgs[0])
+
+    return ift(fArgs[0],ifta(*fArgs[1:]))

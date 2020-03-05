@@ -1,24 +1,12 @@
+'''
+python3 watch_file.py -p1 python3 func_helpers.py -d /Users/bennettbullock/python-pype-lang-3/pype3
+'''
 from pype3.type_checking import *
 from functools import *
-from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,a,ep,tup,iff
+# from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,a,ep,tup,iff
 from pype3.vals import Quote as q
 from pype3.helpers import *
-
-def map_deep(obj,verify,transform):
-
-    if verify(obj):
-
-        return transform(obj)
-
-    if is_list(obj):
-
-        return [map_deep(el,verify,transform) for el in obj]
-
-    if is_dict(obj):
-
-        return {k:map_deep(v,verify,transform) for (k,v) in obj.items()}
-
-    return obj
+import pprint as pp
 
 
 def deep_map(obj,transform,verify=None):
@@ -44,7 +32,24 @@ def deep_map(obj,transform,verify=None):
         return transform(obj)
 
 
-def deep_filter(obj,verify):
+def default_filter_verify(obj):
+
+    if is_list(obj):
+
+        return False
+
+    if is_dict(obj):
+
+        return False
+
+    if not obj:
+
+        return False
+
+    return True
+
+
+def deep_filter(obj,verify=default_filter_verify):
 
     if verify(obj):
 
@@ -71,35 +76,64 @@ def deep_filter(obj,verify):
     return False
 
 
-def deep_reduce(accumulator,obj,transform,verify=None):
+def filter_recs(ls):
 
-    if verify is not None and verify(obj):
+    return [type(el) for el in ls]
 
-        return transform(accumulator,obj)
+
+def deep_reduce_flatten(obj,verify=lambda x:True):
+
+    # short_pp(obj)
+
+    if verify(obj):
+
+        # print('found object')
+
+        return [obj]
 
     if is_list(obj):
 
-        return reduce(transform,
-                      [deep_reduce(accumulator,el,transform,verify) \
-                       for el in obj],
-                      accumulator)
+        ls=[deep_reduce_flatten(el,verify) for el in obj]
+
+        return flatten_lists(ls)
 
     if is_dict(obj):
 
-        return reduce(transform,
-                      [deep_reduce(accumulator,el,transform,verify) \
-                       for (k,el) in obj.items()],
-                      accumulator)
+        ls=[deep_reduce_flatten(el,verify) \
+            for (k,el) in obj.items()]
 
-    if verify is not None and not verify(obj):
+        return flatten_lists(ls)
 
-        return accumulator
+    return []
 
-    if verify is None:
+def deep_reduce(accumulator,obj,transform,verify=None):
 
-        return transform(accumulator,obj)
+    ls=deep_reduce_flatten(obj,verify)
+
+    return reduce(transform,ls,accumulator)
 
 
+############
+# OLD JUNK #
+############
+
+def map_deep(obj,verify,transform):
+
+    if verify(obj):
+
+        return transform(obj)
+
+    if is_list(obj):
+
+        return [map_deep(el,verify,transform) for el in obj]
+
+    if is_dict(obj):
+
+        return {k:map_deep(v,verify,transform) for (k,v) in obj.items()}
+
+    return obj
+ 
+ 
 def reduce_deep(accumulator,obj,transform,empty,verify=None):
 
     if verify is not None and verify(obj):
@@ -166,13 +200,59 @@ EXAMPLE_MAPPING={'CATEGORIZADOR_OLIVIA_DTC':{'replace':'l2Category',
                  'VALOR_TRANSACAO_LOCAL':{'replace':'amount',
                                           'cast_f':to_br_float}}
 
-
+'''
 def apply_mapping(mapping,js):
 
     (dct_items,
      [tup(_1.replace,(_1.cast_f,js[_0]))],
      tup_dct,
     )
+'''
+
+# pypeify_namespace(globals())
+
+from itertools import product 
+
+def js_type(obj):
+
+    if is_list(obj):
+
+        ls=[js_type(el) for el in obj]
+        
+        if all([isinstance(el,type) for el in ls]):
+
+            return list(set(ls))
+
+        if all([is_dict(el) for el in ls]):
+
+            # Do they have the same keys?
+
+            keySets=[set(el.keys()) for el in ls]
+            diffs=[s1.symmetric_difference(s2) \
+                   for (s1,s2) in product(keySets,keySets)]
+
+            if all([len(diff) == 0 for diff in diffs]):
+
+                return [ls[0]]
+
+        return ls
+
+    if is_dict(obj):
+
+        # items=[(k,js_type(v)) for (k,v) in obj.items()]
+        dct={k:js_type(v) for (k,v) in obj.items()}
+
+        return dct
+
+    return type(obj)
 
 
-pypeify_namespace(globals())
+if __name__=='__main__':
+
+    js={'a':[1,2,3],
+        'b':{'c':2,'d':'this'},
+        'e':[{'f':'that','g':'those'},
+             {'f':'that','g':'those'},
+             {'f':'that','g':'those'}]}
+
+    pp.pprint(js_type(js))

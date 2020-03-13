@@ -106,12 +106,32 @@ def deep_reduce_flatten(obj,verify=lambda x:True):
 
     return []
 
+
 def deep_reduce(accumulator,obj,transform,verify=None):
 
     ls=deep_reduce_flatten(obj,verify)
 
     return reduce(transform,ls,accumulator)
 
+
+def deep_collect(obj,verify):
+
+    def append(ls,x):
+
+        ls.append(x)
+
+        return ls
+
+    return deep_reduce([],obj,append,verify)
+
+
+def deep_count(obj,verify):
+
+    def increment(n):
+
+        return n+1
+
+    return deep_reduce(0,obj,increment,verify)
 
 ############
 # OLD JUNK #

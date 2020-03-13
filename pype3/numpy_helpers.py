@@ -834,6 +834,10 @@ def np_round(x):
     return np.int(np.round(x))
 
 
+def cosine_sim(v1,v2):
+
+    return np.nan_to_num(np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)+L))
+
 @njit
 def njit_median(a):
 

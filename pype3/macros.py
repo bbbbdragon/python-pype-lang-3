@@ -2,6 +2,7 @@ from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_list,bu
 from pype3.fargs import is_map,is_filter
 from pype3.helpers import dct_dissoc,dct_assoc,dct_merge
 from pype3.func_helpers import deep_map,deep_filter
+from pype3.type_checking import *
 
 ##########
 # MACROS #
@@ -103,6 +104,11 @@ def app(*fArgs):
     return [append,*fArgs]
 
 
+def ext(*fArgs):
+
+    return (ls_extend,_,*fArgs)
+
+
 def c(*fArgs):
 
     return [concat,*fArgs]
@@ -198,3 +204,22 @@ def dp(fArg,verify=None):
             return (reduce_deep,startVal,_,reduceFArg)
 
     return None
+
+
+def cl_if(*fArgs):
+
+    return cl(ifta(*fArgs))
+
+
+def cl_has(key):
+
+    return cl(ifta(is_dict,_[key]))
+
+
+def cl_app(*fArgs):
+
+    if not fArgs:
+
+        return cl([h,x],app(x))
+
+    return cl([h,x],app(*fArgs))

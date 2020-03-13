@@ -1033,6 +1033,7 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
     fArgs=fArg[1:]
     lambdaArgs=[arg(arg='closure_lambda_arg', annotation=None)]
     
+    # This is for when there is a list of arguments.
     if is_list(fArgs[0]) and len(fArgs[0]) > 1:
 
         # print('is closure node')
@@ -1055,10 +1056,14 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
         fArgs=fArgs[1:]
 
+    else:
+
+        accum=CLOSURE_LAMBDA_ARG
+
     fArgs.reverse()
 
-    closureChain=embedded_closure_chain(fArgs,CLOSURE_LAMBDA_ARG)
-    # closureChain=embedded_closure_chain(fArgs,accum)
+    # closureChain=embedded_closure_chain(fArgs,CLOSURE_LAMBDA_ARG)
+    closureChain=embedded_closure_chain(fArgs,accum)
 
     return closure_lambda_node(closureChain,lambdaArgs)
 

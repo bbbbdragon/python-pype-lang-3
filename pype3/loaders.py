@@ -3,6 +3,7 @@ import csv
 import os
 import chardet
 import pickle
+import numpy as np
 
 def dump_json(fileName,js):
 
@@ -54,6 +55,10 @@ def os_join(txt1,txt2):
 
     return os.path.join(txt1,txt2)
 
+
+def load_numpy(fileName):
+
+    return np.load(fileName)
 
 # def load_csv(fileName,delimiter=','):
 

@@ -1,8 +1,9 @@
-from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_list,build_dict,merge,closure,_,deep_merge
-from pype3.fargs import is_map,is_filter
-from pype3.helpers import dct_dissoc,dct_assoc,dct_merge
+from pype3.fargs import embedded_pype,assoc,concat,l,append,dissoc,build_list,build_dict,merge,closure,_,_0,_1,deep_merge
+from pype3.fargs import is_map,is_filter,is_mirror
+from pype3.helpers import dct_dissoc,dct_assoc,dct_merge,ls_extend,zip_consec,get_call_or_false_core,singleton_dct,dcts_merge_deep
 from pype3.func_helpers import deep_map,deep_filter
 from pype3.type_checking import *
+from pype3.vals import is_pype_val
 
 ##########
 # MACROS #
@@ -223,3 +224,45 @@ def cl_app(*fArgs):
         return cl([h,x],app(x))
 
     return cl([h,x],app(*fArgs))
+
+
+def consec(iterable,dct,n):
+
+    return ep((zip_consec,iterable,n),
+              [(get_call_or_false_core,dct,True,_)],
+              {_})
+
+
+def consec_dct(iterable,dct,n):
+
+    return ep((zip_consec,iterable,n),
+              [l(_,(get_call_or_false_core,dct,True,_))],
+              {_1},
+              [(singleton_dct,_1,_0)],
+              dcts_merge_deep,
+             )
+       
+
+
+# def consec_get():
+def embed(ln,idx=None):
+
+    if ln == 1:
+
+        return l(_)
+
+
+    if idx == None:
+
+        idx=0
+
+    if idx == ln-2:
+
+        return l(_[idx],_[idx+1])
+
+    return l(_[idx],embed(ln,idx+1)) 
+
+
+if __name__=='__main__':
+
+    print(embed(_))

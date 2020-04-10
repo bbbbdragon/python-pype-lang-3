@@ -543,6 +543,11 @@ def cartesian(*lists):
     return itertools.product(*lists)
 
 
+def cartesian_from_ls(ls):
+
+    return cartesian(*ls)
+
+
 def range_cartesian(*els):
 
     lists=[range(el) for el in els]
@@ -1050,6 +1055,12 @@ def dct_merge_deep(dct1,dct2):
 
     return dct1
 
+
+def dcts_merge_deep(dctLS):
+
+    return reduce(lambda h,d:dct_merge_deep(h,d),dctLS,{})
+
+
 def flatten_lists(ls):
 
     while any([is_list(el) for el in ls]):
@@ -1057,3 +1068,19 @@ def flatten_lists(ls):
         ls=flatten_list(ls)
 
     return ls
+
+
+def zip_consec(ls,numItems):
+
+    zipLS=[ls[offset:] for offset in range(1,numItems)]
+
+    return zip(ls,*zipLS)
+
+
+def singleton_dct(el,keys):
+
+    if len(keys) == 1:
+
+        return {keys[0]:el}
+
+    return {keys[0]:singleton_dct(el,keys[1:])}

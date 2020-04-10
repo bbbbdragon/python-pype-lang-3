@@ -7,7 +7,9 @@ from functools import *
 from pype3.vals import Quote as q
 from pype3.helpers import *
 import pprint as pp
+from collections import Counter
 
+FLOAT_L=1e-100
 
 def deep_map(obj,transform,verify=None):
  
@@ -132,6 +134,85 @@ def deep_count(obj,verify):
         return n+1
 
     return deep_reduce(0,obj,increment,verify)
+
+
+def deep_add(obj,verify):
+
+    def increment(c,n):
+
+        return c+n
+
+    return deep_reduce(0,obj,increment,verify)
+
+
+def deep_prob(obj,verify=is_int):
+
+    sm=deep_add(obj,verify)
+
+    def p(n):
+
+        return n/(sm+FLOAT_L)
+
+    return deep_map(obj,p,verify)
+
+
+#########################
+# EMBEDDED DICTIONARIES #
+#########################
+
+def embed_tups(tup):
+
+    if len(tup) == 1:
+
+        return [tup[0]]
+
+    if len(tup) == 2:
+
+        return [tup[0],tup[1]]
+
+    return [tup[0],embed_tups(tup[1:])]
+
+
+def embed_dcts_rec(obj,final_func):
+
+    # Is this a list?
+    if is_list(obj) and obj:
+
+        firstElement=obj[0]
+
+        # If this is not the last tuple, we call tup_ls_dct and recurse into
+        # the result.
+        if is_list(firstElement):
+
+           if len(firstElement) > 1 \
+              and len(firstElement[-1]) > 1:
+
+               return embed_dcts_rec(tup_ls_dct(obj),final_func)
+
+
+    if is_dict(obj):
+
+        # print("returning dict")
+
+        return {k:embed_dcts_rec(v,final_func) for (k,v) in obj.items()}
+
+    # print('returning obj')
+    # short_pp(obj)
+
+    return final_func(obj)
+
+
+def embed_dcts(obj,final_func=lambda x:x):
+
+    tups=[embed_tups(tp) for tp in obj]
+        
+    return embed_dcts_rec(tups,final_func)
+    
+
+def embed_counters(obj):
+
+    return embed_dcts(obj,lambda x:dict(Counter(x)))
+    
 
 ############
 # OLD JUNK #

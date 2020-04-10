@@ -3,6 +3,7 @@ from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,tup,db,a,iff,d
 from pype3.helpers import *
 from pype3 import ep
 from numba import njit,jit
+from functools import reduce
 
 '''
 This is a series of operations for numpy.  Will document later.
@@ -544,6 +545,11 @@ def softplus(x):
     return np.log(1+np.exp(-np.abs(x))) + np.maximum(x,0)
 
 
+def prob_dct(dct):
+
+    sm=sum(dct.values())+L
+
+    return {k:v/sm for (k,v) in dct.items()}
 
 '''
 def prob_dct(valDct):
@@ -838,6 +844,17 @@ def cosine_sim(v1,v2):
 
     return np.nan_to_num(np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)+L))
 
+
+def sm(ls):
+
+    return sum(ls)
+
+
+def np_dot(*matLS):
+
+    return reduce(lambda h,x:np.dot(h,x),matLS[1:],matLS[0])
+
+
 @njit
 def njit_median(a):
 
@@ -864,3 +881,4 @@ def njit_median(a):
 
     
 pypeify_namespace(globals())
+

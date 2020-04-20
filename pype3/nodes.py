@@ -4,7 +4,7 @@ from pype3.vals import LamTup,delam,is_bookmark,NameBookmark
 from pype3.fargs import INDEX_ARG_DICT
 from pype3.vals import LamTup,VarAssign
 from pype3.type_checking import *
-from itertools import groupby
+from itertools import groupby,product
 from inspect import signature
 from collections import defaultdict
 from inspect import getsource
@@ -1005,7 +1005,50 @@ def quote_node(fArg,accum=ACCUM_LOAD):
 # CLOSURE NODE #
 ################
 
+def closure_assign_node(fArg,accum,body):
+
+    print('*'*30)
+    print('closure_assign_node')
+    print(f'{fArg} is fArg')
+    print(f'{ast.dump(accum)} is accum')
+
+    assignTo=fArg.assignTo
+    print(f'{assignTo} is assignTo')
+    assignFrom=fArg.assignFrom
+    # print(assignFrom)
+    assignToNode=optimize_rec(assignTo,accum)
+    print(f'{ast.dump(assignToNode)} is assignToNode') 
+    assignToName=assignToNode.id 
+    assignFromNode=optimize_rec(fArg.assignFrom,accum)
+    lam=Lambda(args=arguments(args=[arg(arg=assignToName,annotation=None)],
+                              vararg=None, 
+                              kwonlyargs=[], 
+                              kw_defaults=[], 
+                              kwarg=None, 
+                              defaults=[assignFromNode],
+                             ))
+    lam.body=body
+
+    print(f'{ast.dump(lam)} is lam')
+    return Call(func=lam,args=[],keywords=[])
+    
+           
 def embedded_closure_chain(fArgs,accum):
+
+    print('*'*30)
+    print('embedded_closure_chain')
+    print(fArgs)
+
+    if is_assign(fArgs[0]):
+
+        print(f'{fArgs[0]} is assign')
+
+        body=embedded_closure_chain(fArgs[1:],accum)
+        print(f'{ast.dump(body)} is body')
+        assignLam=closure_assign_node(fArgs[0],accum,body)
+        print(f'{ast.dump(assignLam)} is body')
+
+        return assignLam
 
     if len(fArgs) == 1:
 
@@ -1016,19 +1059,23 @@ def embedded_closure_chain(fArgs,accum):
 
 def closure_lambda_node(node,lambdaArgs):
 
+    '''
+    Try synthesizing with lambda node
+    '''
     return Lambda(args=arguments(args=lambdaArgs, 
-                                       vararg=None, 
-                                       kwonlyargs=[], 
-                                       kw_defaults=[], 
-                                       kwarg=None, 
-                                       defaults=[]),
+                                 vararg=None, 
+                                 kwonlyargs=[], 
+                                 kw_defaults=[], 
+                                 kwarg=None, 
+                                 defaults=[]),
                   body=node)
 
 
 def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
-    # print('*'*30)
-    # print(ast.dump(accum))
+    print('*'*30)
+    print('closure_node')
+    print(ast.dump(accum))
 
     fArgs=fArg[1:]
     lambdaArgs=[arg(arg='closure_lambda_arg', annotation=None)]
@@ -1060,10 +1107,14 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
         accum=CLOSURE_LAMBDA_ARG
 
-    fArgs.reverse()
+    # fArgs.reverse()
 
-    # closureChain=embedded_closure_chain(fArgs,CLOSURE_LAMBDA_ARG)
+    # print(f'{fArgs} is fArgs')
+    # print(f'{[ast.dump(n) for n in fArgs]} is fArgs')
+
     closureChain=embedded_closure_chain(fArgs,accum)
+
+    print(f'{ast.dump(closureChain)} is closureChain')
 
     return closure_lambda_node(closureChain,lambdaArgs)
 
@@ -1074,13 +1125,19 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG):
 
 def assign_node(fArg,accum=ACCUM_LOAD):
 
+    # print('assign_node')
+    # print(f'{fArg} is fArg')
+    # print('*'*30)
+    
     assignTo=fArg.assignTo
     assignFrom=fArg.assignFrom
     assignToNode=optimize_rec(assignTo,accum)
+    # print(f'{ast.dump(assignToNode)} is assignToNode')
     assignToNode.ctx=Store()
     assignFromNode=optimize_rec(fArg.assignFrom,accum)
 
     return Assign(targets=[assignToNode], value=assignFromNode)
+
 
 
 ############
@@ -1152,6 +1209,18 @@ def assign_node_to_accum(node,accum=ACCUM_STORE):
 # OPTIMIZER FUNCTIONS #
 #######################
 
+def merge_optimize_pairs(sharedPairs,additionalPairs):
+
+    sharedPairs=deepcopy(sharedPairs)
+    dct={f:(f,nodeF) for (f,nodeF) in sharedPairs}
+    
+    for (f,nodeF) in additionalPairs:
+
+        dct[f]=nodeF
+
+    return [(f,nodeF) for (f,nodeF) in dct.items()]
+
+
 SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_slice,slice_node),
               (is_mirror,mirror_node),
@@ -1169,13 +1238,17 @@ SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_list_concat,list_concat_node),
               (is_do,do_node),
               (is_reduce,reduce_node),
-              (is_quote,quote_node),
+              (is_quote,quote_node), 
               (is_closure,closure_node),
-              (is_assign,assign_node),
               (is_deep_merge,deep_merge_node)]
 OPTIMIZE_PAIRS=[(is_bookmark,ast_name_node),
                 (is_callable,callable_node),
+                (is_assign,assign_node),
                 (is_index,index_node)]+SHARED_PAIRS
+# OPTIMIZE_PAIRS=merge_optimize_pairs(SHARED_PAIRS,
+                                    # [(is_bookmark,ast_name_node),
+                                     # (is_callable,callable_node),
+                                     # (is_index,index_node)])
 # ITERABLE_PAIRS=[(is_bookmark,call_name_node),
                 # (is_callable,callable_node),
                 # (is_index,index_node)]+SHARED_PAIRS
@@ -1183,17 +1256,28 @@ LAMBDA_OPTIMIZE_PAIRS=[(is_bookmark,ast_name_node),
                        (is_callable,function_node),
                        (is_index,lambda_index_node),
                       ]+SHARED_PAIRS
-
+# LAMBDA_OPTIMIZE_PAIRS=merge_optimize_pairs(SHARED_PAIRS,
+                                           # [(is_bookmark,ast_name_node),
+                                            # (is_callable,function_node),
+                                            # (is_index,lambda_index_node)])
+# CLOSURE_OPTIMIZE_PAIRS=[(is_bookmark,ast_name_node),
+                        # (is_callable,callable_node),
+                        # (is_assign,closure_assign_node),
+                        # (is_index,index_node)]+SHARED_PAIRS
+# CLOSURE_OPTIMIZE_PAIRS=merge_optimize_pairs(SHARED_PAIRS,
+                                            # [(is_assign,closure_assign_node)])
+# print(CLOSURE_OPTIMIZE_PAIRS)
+# CLOSURE_OPTIMIZE_PAIRS=SHARED_PAIRS+[(is_assign,closure_assign_node)]
 
 def optimize_rec(fArg,
                  accumNode=ACCUM_LOAD,
                  optimizePairs=OPTIMIZE_PAIRS,
                  embeddingNodes=[]
-                 ):
+                ):
 
-    #print('>'*30)
-    #print('optimize_rec')
-    #print(f'{fArg} is fArg')
+    # print('>'*30) 
+    # print('optimize_rec')
+    # print(f'{fArg} is fArg')
 
     fArg=delam(fArg)
     optimizers=[opt_f for (evl_f,opt_f) in optimizePairs if evl_f(fArg)]
@@ -1207,7 +1291,7 @@ def optimize_rec(fArg,
 
     optimizer=optimizers[-1]
     
-    #print(f'{optimizer} is optimizer')
+    # print(f'{optimizer} is optimizer')
 
     # TODO - either get rid of this or implement it properly
     if is_dict(optimizer):

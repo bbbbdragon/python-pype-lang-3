@@ -387,7 +387,7 @@ class ClosureNameReplacer(NodeTransformer):
 
 class AssignNameSpaceFinder(NodeVisitor):
     '''
-    This specifically craws an fArg node and looks for any assignment operators.
+    This specifically crawls an fArg node and looks for any assignment operators.
     When it finds one, it adds the assigned-to name to the namespace.
     '''
     def __init__(self,nameSpace):
@@ -395,6 +395,8 @@ class AssignNameSpaceFinder(NodeVisitor):
         self.nameSpace=nameSpace
 
     def visit_BinOp(self,node):
+
+        # print(f'{ast.dump(node)} is binop')
 
         if isinstance(node.op,LShift):
             

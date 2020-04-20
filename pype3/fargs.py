@@ -398,6 +398,9 @@ def is_slice(fArg):
 
 def is_assign(fArg):
 
+    # print('*'*30)
+    # print(f'{fArg} is assign {isinstance(fArg,VarAssign)}')
+
     return isinstance(fArg,VarAssign)
 
 

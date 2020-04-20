@@ -1,5 +1,5 @@
 '''
-python3 watch_file.py -p2 python3 assigns_closures_and_quotes.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 assigns_closures_and_function_args.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3
 '''
 from pype3 import pypeify,pypeify_namespace,p,_,_0,_1,_2,ep,db,a,iff,d,ift,squash,ifp
 from pype3 import cl
@@ -70,6 +70,14 @@ def closure_example_2(n):
     )
     
 
+@pypeify(verbose=True)
+def closure_example_var_def(n):
+
+    (cl([y,z],
+        (sm,_,z)),
+    )
+
+
 #####################################
 # FUNCTIONS AS FIRST CLASS CITIZENS #
 #####################################
@@ -106,7 +114,7 @@ def function_first_class_example(funcs,n):
 pypeify_namespace(globals())
 
 if __name__=='__main__':
-
+    '''
     print('*'*30)
     print('assigns')
     print('*'*30)
@@ -123,7 +131,12 @@ if __name__=='__main__':
 
     print('closure_example_2(2)')
     print(closure_example_2(2))
+    '''
+    print('closure_example_var_def(2)')
+    print(closure_example_var_def(2))
 
+    
+    '''
     print('*'*30)
     print('functions as first-class citizens')
     print('*'*30)
@@ -139,3 +152,4 @@ if __name__=='__main__':
 
     print('function_first_class_example(functions,2)')
     print(function_first_class_example(functions,2))
+    '''

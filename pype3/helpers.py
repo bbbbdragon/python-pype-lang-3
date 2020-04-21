@@ -684,6 +684,25 @@ def reverse_ls_dct(dct):
     return dict(dd)
 
 
+def deep_reverse_dct(dct):
+
+    rev={}
+
+    for (k,v) in dct.items():
+
+        if is_list(v):
+
+            for el in v:
+
+                rev[el]=k
+
+        else:
+
+            rev[v]=k
+
+    return rev
+
+
 def empty_ls_dct(keys):
 
     return {key:[] for key in keys}

@@ -41,7 +41,7 @@ for js in ages:
     name=js['name']
     age=js['age']
     decade=int(age/10)
-    ageName=agesNames[decate]
+    ageName=agesNames[decade]
     agesDct[ageName].append(name)
 ```
 Here is how you'd write this in pype:

@@ -1,5 +1,10 @@
 import re
 
+def to_lower(st):
+
+    return st.lower()
+
+
 def join_st(ls,joiner=' '):
  
     return joiner.join(ls)
@@ -80,4 +85,17 @@ def strip_spaces(st):
 
     return re.sub(r'\s+',' ',sb)
 
+
+def load_dir(dirName):
+
+    files=[os_join(dirName,fl) for fl in os_listdir(dirName)]
+
+    return {fl:load_file(fl) for fl in files}
+
+
+def load_utf(fileName):
+
+    with open(fileName,'rb') as f:
+
+        return f.read().decode('utf-8')
 

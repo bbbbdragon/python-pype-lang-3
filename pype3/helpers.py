@@ -415,6 +415,7 @@ def merge_dcts_vals(dctLS):
     return reduce(dct_merge_vals,dctLS)
 
 
+
 def jn(ls):
 
     return ' '.join(ls)
@@ -987,6 +988,10 @@ def join_texts(ls,joiner=' '):
 
 
 def dct_merge_rec(dct1,dct2):
+
+    if isinstance(dct1,list) and isinstance(dct2,list):
+
+        return dct1+dct2
 
     if not isinstance(dct1,dict) or not isinstance(dct2,dict):
 

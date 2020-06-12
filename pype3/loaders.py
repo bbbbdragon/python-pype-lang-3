@@ -39,6 +39,13 @@ def load_bytes(fileName):
         return text
 
 
+def load_utf(fileName):
+
+    with open(fileName,'rb') as f:
+
+        return f.read().decode('utf-8')
+
+
 def load_pickle(fileName):
 
     with open(fileName,'rb') as f:
@@ -51,14 +58,86 @@ def os_listdir(dirName):
     return os.listdir(dirName)
 
 
+def os_basename(pth):
+
+    return os.path.basename(pth)
+
+
 def os_join(txt1,txt2):
 
     return os.path.join(txt1,txt2)
 
 
+def os_is_file(path):
+
+    return os.path.isfile(path)
+
+
+def os_walk(path):
+
+    return list(os.walk(path))
+
+
+def os_walk_files(path,pattern=''):
+
+    ls=[os_join(pth,fl) for pth,x,flLS in os.walk(path) for fl in flLS]
+    ls=[pth for pth in ls if os_is_file(pth)]
+    
+    if not pattern:
+
+        return ls
+
+    return [pth for pth in ls if pattern in pth]
+
+
+def os_path_split(dr):
+
+    return os.path.split(dr)
+
+
+def os_file(pth):
+
+    return os_path_split(pth)[1]
+
+
+def load_dir(dirName):
+
+    files=[os_join(dirName,fl) for fl in os_listdir(dirName)]
+
+    return {fl:load_bytes(fl) for fl in files}
+
+
+def load_utf(fileName):
+
+    with open(fileName,'rb') as f:
+
+        return f.read().decode('utf-8',errors='replace')
+
+
 def load_numpy(fileName):
 
     return np.load(fileName)
+
+
+def load_csv(fileName):
+
+    with open(fileName,'r') as f:
+
+        return csv.reader(fileName)
+
+
+def ordered_dct_to_dct(od):
+
+    return {k:v for (k,v) in od.items()}
+
+
+def load_csv_dct(fileName):
+
+    with open(fileName,'r') as f:
+
+        cs=csv.DictReader(f)
+
+        return [ordered_dct_to_dct(d) for d in cs]
 
 # def load_csv(fileName,delimiter=','):
 

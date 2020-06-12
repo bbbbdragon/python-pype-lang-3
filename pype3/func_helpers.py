@@ -53,6 +53,18 @@ def default_filter_verify(obj):
 
 def deep_filter(obj,verify=default_filter_verify):
 
+    if is_list(obj):
+
+        null=[]
+
+    elif is_dict(obj):
+
+        null={}
+
+    else:
+
+        null=False
+
     if verify(obj):
 
         return obj
@@ -75,7 +87,46 @@ def deep_filter(obj,verify=default_filter_verify):
 
             return dct
 
-    return False
+    return null
+
+
+def deep_filter_container(obj,verify=default_filter_verify):
+
+    if is_list(obj):
+
+        null=[]
+
+    elif is_dict(obj):
+
+        null={}
+
+    else:
+
+        null=False
+
+    if verify(obj):
+
+        return obj
+
+    if is_list(obj):
+
+        ls=[deep_filter(el,verify) for el in obj]
+        ls=[el for el in ls if el]
+
+        if ls:
+
+            return ls
+
+    if is_dict(obj):
+
+        dct={k:deep_filter(el,verify) for (k,el) in obj.items()}
+        dct={k:el for (k,el) in dct.items() if el}
+
+        if dct:
+
+            return dct
+
+    return null
 
 
 def filter_recs(ls):

@@ -879,6 +879,32 @@ def njit_median(a):
 
     return (val1+val2)/2
 
+
+
+def row_normalize(m):
+
+    n=np.linalg.norm(m,axis=1)
+    n=n[:,np.newaxis]
+    m/=n
+
+    return m
+
+
+def max_rows(m,sim):
+
+    m[m < sim]=0.0
+    args=np.argsort(m,axis=1)[:,-5:]
     
+    return [[a for a in row if m[i,a] != 0] for (i,row) in enumerate(args)]
+
+
+def normalized_vec(v):
+
+    n=np.linalg.norm(v)
+    v/=n
+
+    return v
+  
+  
 pypeify_namespace(globals())
 

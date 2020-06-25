@@ -131,11 +131,11 @@ def ordered_dct_to_dct(od):
     return {k:v for (k,v) in od.items()}
 
 
-def load_csv_dct(fileName):
+def load_csv_dct(fileName,delimiter=','):
 
     with open(fileName,'r') as f:
 
-        cs=csv.DictReader(f)
+        cs=csv.DictReader(f,delimiter=delimiter)
 
         return [ordered_dct_to_dct(d) for d in cs]
 

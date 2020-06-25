@@ -421,7 +421,7 @@ def jn(ls):
     return ' '.join(ls)
 
 
-def first(ls,n):
+def first(ls,n=1):
 
     return ls[:n]
 
@@ -502,6 +502,11 @@ def zip_ls(ls1,ls2):
 def zip_dct(ls1,ls2):
 
     return tup_dct(zip(ls1,ls2))
+
+
+def sort_by_closure(ls,f,rev=False):
+
+    return sorted(ls,key=f,reverse=rev)
 
 
 def sort_by_key(ls,key,rev=False):
@@ -1108,3 +1113,12 @@ def singleton_dct(el,keys):
         return {keys[0]:el}
 
     return {keys[0]:singleton_dct(el,keys[1:])}
+
+
+def first_dct(ls):
+
+    if not ls:
+
+        return {}
+
+    return ls[0]

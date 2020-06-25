@@ -31,6 +31,7 @@ from pype3.macros import select,a,ap,m,d,tup,app,c,is_true,squash,change
 from pype3.macros import cl,dm,cl_if,cl_has,cl_app,ext,consec,consec_dct
 from pype3.macros import embed,td,tdm
 from numba import njit
+# import astor
 
 #######################
 # NAIVE PYPE FUNCTION #
@@ -313,6 +314,8 @@ def pypeify(verbose=False,
             We compile the new tree, storing the result in recompiledReplacerNamespace.
             '''
             recompiledReplacerNamespace={}
+
+            # print(astor.to_source(originalTree)) # Here we want to_source
 
             exec(compile(originalTree,
                          filename='<ast>',

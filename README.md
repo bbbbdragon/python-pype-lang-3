@@ -126,6 +126,7 @@ Other examples demonstrate how to implement recursion in pype, and how to build 
 * `examples/fibonacci.py` - recursive Fibonacci
 * `examples/cyk.py` - A purely functional implementation of the CYK parsing algorithm.
 * `examples/cyk_no_docstring.py` - `examples/cyk.py` with the docstrings stripped out to demonstrate pype3's conciseness.
+* `examples/data_structures/` - common data structures and algorithms implemented in pype as a POC.
 
 To run any of these files from a command line, just type in the quoted command at the beginning of the file.  For example, `quicksort.py` can be run by typing:
 ```

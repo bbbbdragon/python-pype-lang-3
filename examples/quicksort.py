@@ -1,7 +1,7 @@
 '''
 python3 quicksort.py
 
-python3 watch_file.py -p2 python3 quicksort.py -p1 ./reinstall_from_source.sh  -d /Users/bennettbullock/python-pype-lang-3
+python3 watch_file.py -p2 python3 quicksort.py -p1 ./reinstall_from_source.sh -d /Users/bennettbullock/python-pype-lang-3/
 '''
 from pype3 import p,pypeify_namespace,pypeify
 from pype3 import _,iff,tup,l

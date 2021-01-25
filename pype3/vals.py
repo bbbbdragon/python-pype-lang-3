@@ -19,9 +19,21 @@ class VarAssign(object):
         return f'VarAssign(assignTo={self.assignTo},assignFrom={self.assignFrom})'
 
 
+class KwargApply(object):
+
+    def __init__(self,applyTo):
+
+        self.assignTo=applyTo
+
+    
+    def __repr__(self):
+
+        return f'KwargApply(applyTo={self.applyTo})'
+
+
 class LamTup(object):
     '''
-    This takes tuple expressions and overrides operators for them.
+    This takes expressions and overrides operators for them.
     '''
     def __init__(self,*tup):
 
@@ -246,9 +258,34 @@ class PypeVal(LamTup):
 
         self._tup_=(val[0],)
 
+
     def __str__(self):
 
         return f'PV({str(self._tup_)})'
+
+
+##################
+# KwargsBookMark #
+##################
+
+class KwargsBookmark(PypeVal):
+
+    def __init__(self,exp):
+
+        self.exp=exp
+        
+
+    def val(self):
+
+        print('calling val')
+
+        return KwargsBookmark(self.exp)
+
+
+    def __repr__(self):
+
+        return f"KwargsBookmark('{self.exp}')"
+
     
 ##########
 # GETTER #
@@ -387,6 +424,14 @@ def is_bookmark(fArg):
     return "NameBookmark" in str(fArg.__class__)
 
 
+def is_kwargs(fArg):
+    '''
+    This is a weird hack - I couldn't get isinstance to work on NameBookmark for some
+    odd reason.  
+    '''
+    return "KwargsBookmark" in str(fArg.__class__)
+
+
 def delam(expr):
     '''
     This function converts a LamTup, or any of its descendants, into a data structure
@@ -449,6 +494,10 @@ def delam(expr):
     # NameBookmarks we want to keep as is so that the compiler can turn them into
     # Name Nodes.
     if is_bookmark(expr):
+
+        return expr
+
+    if is_kwargs(expr):
 
         return expr
 

@@ -31,7 +31,7 @@ def build_mat(y,X):
     return m
 
 
-@njit
+# @njit
 def shuffle(m):
 
     np.random.shuffle(m)
@@ -51,7 +51,7 @@ def aggregate_by_first_column(m):
     return splitValues,uniqueKeys[0],uniqueKeys[1]
 
 
-@njit
+# @njit
 def vectors_to_column_matrix(vecs,m):
 
     for (i,vec) in enumerate(vecs):
@@ -61,7 +61,7 @@ def vectors_to_column_matrix(vecs,m):
     return m
 
 
-@njit
+# @njit
 def sizes(vecs,s):
 
     for (i,vec) in enumerate(vecs):
@@ -229,13 +229,13 @@ def cap_at(x,thresh=0):
     
 
 # This is a hack for pype's lack of support of complex indexes.
-@njit
+# @njit
 def np_rows_from(a,colStart=0):
 
     return a[:,colStart:]
 
 
-@njit
+# @njit
 def np_rows_to(a,colEnd):
 
     return a[:,:colEnd]
@@ -315,7 +315,7 @@ def row_sum(array):
     return np.sum(array,axis=1)
 
 
-@njit
+# @njit
 def col_sum(array):
 
     return np.sum(array,axis=0)
@@ -625,7 +625,7 @@ def row_argmax(a):
 
 
 
-@njit
+# @njit
 def k_fold_filter(m,filterBegin,filterEnd):
 
     # print(f'{filterBegin} is filterBegin')
@@ -652,7 +652,7 @@ def k_fold_filter(m,filterBegin,filterEnd):
 
 
 
-@njit
+# @njit
 def np_set(a,i,v):
 
     a[i]=v
@@ -680,7 +680,7 @@ def string_to_array(st,ln,pad=-1):
     return m
 
 
-@njit
+# @njit
 def bernstein_hash(stArray,a):
 
     # print(f'{stArray} is stArray')
@@ -707,7 +707,7 @@ def bernstein_hash(stArray,a):
     return a[:arrayIndex+1]
 
 
-@njit
+# @njit
 def bernstein_hash_mat(m,m2,offset=1,pad=-1):
 
     numRows=m.shape[0]
@@ -741,7 +741,7 @@ def bernstein_hash_mat(m,m2,offset=1,pad=-1):
     return m2
 
 
-@njit
+# @njit
 def fast_aggregate(m,m2,pad=-1,offset=1):
 
     numRows=m.shape[0]
@@ -809,7 +809,7 @@ def row_stack(rowList,m):
     return m
 
 
-@njit
+# @njit
 def col_stack(firstElements,secondElements,m,offset=1):
 
     m[:,0]=firstElements
@@ -855,7 +855,7 @@ def np_dot(*matLS):
     return reduce(lambda h,x:np.dot(h,x),matLS[1:],matLS[0])
 
 
-@njit
+# @njit
 def njit_median(a):
 
     ln=a.shape[0]

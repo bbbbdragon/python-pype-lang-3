@@ -8,7 +8,7 @@ from operator import itemgetter
 import pprint as pp
 import numpy as np
 import time as tm
-from numba import njit,jit
+# from numba import njit,jit
 import pickle as pk
 import json as js
 

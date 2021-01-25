@@ -61,6 +61,11 @@ def st_title(st):
     return st.title()
 
 
+def re_match(regx,text):
+
+    return regx.match(text)
+
+
 def re_sub(regx,text,rep=''):
 
     return regx.sub(rep,text)

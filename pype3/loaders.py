@@ -4,6 +4,7 @@ import os
 import chardet
 import pickle
 import numpy as np
+from csv import DictReader
 
 def dump_json(fileName,js):
 
@@ -138,6 +139,27 @@ def load_csv_dct(fileName,delimiter=','):
         cs=csv.DictReader(f,delimiter=delimiter)
 
         return [ordered_dct_to_dct(d) for d in cs]
+
+
+def load_csv_dct_exception(fileName,delimiter=','):
+
+    with open(fileName) as f:
+
+        dctLS=[]
+        dr=DictReader(f,delimiter=delimiter)
+
+        for dct in dr:
+
+            try:
+
+                dctLS.append(dict(dct))
+
+            except Exception as e:
+
+                print(e)
+                pass
+
+        return dctLS
 
 # def load_csv(fileName,delimiter=','):
 

@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import pprint as pp
 import types
-from pype3.vals import NameBookmark,VarAssign
+from pype3.vals import NameBookmark,VarAssign,KwargsBookmark
 
 #############
 # CONSTANTS #
@@ -52,6 +52,7 @@ concat='LIST_CONCAT'
 while_loop='WHILE_LOOP'
 closure='PYPE_CLOSURE'
 deep_merge='DEEP_MERGE'
+kwargs='PYPE_KWARGS'
 do='FARG_DO'
 LIST_ARGS=set([embedded_pype,
                build_dict,
@@ -103,6 +104,18 @@ def is_callable(fArg):
 
     return callable(fArg)
 '''
+
+###########
+# STARRED #
+###########
+
+KWARGS=set([kwargs])
+
+def is_kwargs(fArg):
+
+    return is_list(fArg) \
+        and len(fArg) > 0 \
+        and fArg[0] in KWARGS
 
 #######
 # MAP #
@@ -401,6 +414,23 @@ def is_assign(fArg):
     return isinstance(fArg,VarAssign)
 
 
+##################
+# KwargsBookmark #
+##################
+
+import ast
+
+def is_kwargs(fArg):
+
+    # print('*')
+    # print('is_kwargs')
+    # print(fArg)
+    # print('is fArg')
+    # print(isinstance(fArg,KwargsBookmark)) 
+
+    return isinstance(fArg,KwargsBookmark)
+
+
 ###########
 # CLOSURE #
 ###########
@@ -433,6 +463,7 @@ FARGS=[is_mirror,
        is_list_concat,
        is_embedded_pype,
        is_quote,
+       is_kwargs,
        is_do]
 
 

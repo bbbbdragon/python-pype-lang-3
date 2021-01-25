@@ -571,6 +571,45 @@ class NameBookmarkReplacer(NodeVisitor):
 
         self.generic_visit(node)
 
+#################
+# KwargsReplacer #
+#################
+
+class KwargsReplacer(NodeVisitor):
+
+    def __init__(self,aliases):
+
+        self.pypeAliases=aliases
+    
+    def visit_FunctionDef(self,node):
+
+        if is_pype_return(node.body,self.pypeAliases):
+
+            fArgsNodes=node.body[-1].value.args[1:]
+            newFArgsNodes=[]
+
+            for fArgNode in fArgsNodes:
+
+                if isinstance(fArgNode,Starred):
+
+                    newNode=Call(func=Attribute(value=PYPE_VALS_NODE,
+                                                attr='KwargsBookmark',
+                                        ctx=Load()),
+                         args=[fArgNode.value],  
+                         keywords=[])
+
+                    newFArgsNodes.append(newNode)
+
+                else:
+
+                    newFArgsNodes.append(fArgNode)
+            
+            node.body[-1].value.args[1:]=newFArgsNodes
+
+        node.decorator_list=[]
+        node=fix_missing_locations(node)
+
+        self.generic_visit(node)
 
 
 #################

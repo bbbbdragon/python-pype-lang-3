@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.26'
+__version__='3.0.27'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *
@@ -286,7 +286,8 @@ def pypeify(verbose=False,
             printAccums=False,
             keyStep=False,
             buildKeyStep=False,
-            njitOptimized=False):
+            # njitOptimized=False
+           ):
     '''
     TODO: Recursive Functions can't be compiled with explicit build.
     '''
@@ -296,9 +297,13 @@ def pypeify(verbose=False,
         functionDecorators are functions that are applied to the compiled function.
         nodeEmbedders are functions that are applied to each fArg.
         '''
+        '''
         functionDecorators=embedding_functions(njitOptimized,
                                                njit,
                                                timed,
+                                               time_func)
+        '''
+        functionDecorators=embedding_functions(timed,
                                                time_func)
         embeddingNodes=embedding_functions(*[printAccums,
                                              print_and_eval_node,

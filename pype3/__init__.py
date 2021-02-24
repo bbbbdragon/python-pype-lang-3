@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.31'
+__version__='3.0.32'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *
@@ -90,8 +90,6 @@ def add_main_modules(mod,glbls):
 
         attr=getattr(mod,name)
         modName=''
-
-        print(attr)
 
         if is_callable(attr):
 

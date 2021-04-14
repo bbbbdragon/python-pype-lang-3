@@ -11,6 +11,7 @@ import time as tm
 # from numba import njit,jit
 import pickle as pk
 import json as js
+from itertools import groupby
 
 '''
 This file contains 3 things:
@@ -177,7 +178,13 @@ def dct_intersect(dct,keys):
 
     return {k:dct[k] for k in keys if k in dct}
 
- 
+
+def dcts_equal(d1,d2):
+
+    return all([k in d2 for k in d1]) \
+       and all([d1[k] == d2[k] for k in d1])
+
+
 def dct_assoc(dct,*keyVals):
 
     keys=keyVals[::2]
@@ -1122,3 +1129,25 @@ def first_dct(ls):
         return {}
 
     return ls[0]
+
+
+def prnt(js,message):
+
+    print(message)
+
+    return js
+
+
+def select_ls(d,keys):
+
+    return {k:d[k] for k in keys if k in d}
+
+
+def unique_dcts_by_key(ls,key):
+
+    return [list(v)[0] for (k,v) in groupby(ls,lambda k: k[key])] 
+
+
+def group_dcts_by_key(ls,key):
+
+    return [list(v) for (k,v) in groupby(ls,lambda k: k[key])] 

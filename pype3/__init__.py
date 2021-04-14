@@ -1,5 +1,5 @@
 name='pype3'
-__version__='3.0.33'
+__version__='3.0.34'
 py_slice=slice
 from pype3.build_helpers import *
 from pype3.nodes import *
@@ -286,6 +286,7 @@ def pypeify(verbose=False,
             printAccums=False,
             keyStep=False,
             buildKeyStep=False,
+            recompile=False,
             # njitOptimized=False
            ):
     '''
@@ -339,7 +340,7 @@ def pypeify(verbose=False,
             If we've already compiled this function, then just grab it from the 
             function cache and evaluate it.
             '''
-            if originalFuncName in FUNCTION_CACHE:
+            if originalFuncName in FUNCTION_CACHE and not recompile:
                 
                 return FUNCTION_CACHE[originalFuncName](*args)
 
@@ -463,17 +464,11 @@ def pypeify_namespace(namespace,
     allPypeFunctions={k:v for (k,v) in namespace.items() \
                       if is_pype_function(v,aliases)}
 
-    if recompiled:
-
-        for k in allPypeFunctions:
-
-            del functionCache[k]
-
     for (k,v) in allPypeFunctions.items():
         
         if not is_pype_decorated_function(v):
 
-            f=pype_builder()(v)
+            f=pype_builder(recompile=recompile)(v)
             
             namespace[k]=f
 

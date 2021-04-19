@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 #    LONG_DESCRIPTION=fh.read()
 
 setup(name='python-pype-lang-3',
-      version='3.0.37',
+      version='3.0.38',
       description='Version 3 of pype, a Python-integrated functional programming language - Provides easy-to-use pseudo-macros for common functional programming tasks such as maps, reduces, filters, conditionals, dictionary manipulations, and list manipulations..',
       #long_description_content_type="text/markdown",
       #long_description=LONG_DESCRIPTION,
@@ -26,7 +26,7 @@ setup(name='python-pype-lang-3',
           # 'numba',
           'colorama',
           'astpretty',
-          #'mmh3',
+          'mmh3',
           'requests',
           'flask',
           'twine',

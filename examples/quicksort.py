@@ -100,6 +100,13 @@ def qs4(ls):
      iff(ln,(qs4,{_ < pivot}) + l(pivot) + (qs4,{_ > pivot})),
     )
 
+
+def qs4(ls):
+
+    (pivot << _[tup(int,len/2)],
+     iff(ln,(qs4,{_ < pivot}) + l(pivot) + (qs4,{_ > pivot})),
+    )
+
 '''
 pypeify compiles all the functions above ...
 '''

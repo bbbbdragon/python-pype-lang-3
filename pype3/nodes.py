@@ -1082,20 +1082,24 @@ def embedded_closure_chain(fArgs,accum,kwargs=False):
     return optimize_rec(fArgs[0],embedded_closure_chain(fArgs[1:],accum))
 
 
-def closure_lambda_node(node,lambdaArgs,kwargs=False):
+def closure_lambda_node(node,lambdaArgs,kwarg=None):
 
     return Lambda(args=arguments(args=lambdaArgs, 
                                        vararg=None, 
                                        kwonlyargs=[], 
                                        kw_defaults=[], 
-                                       kwargs=None, 
+                                       kwarg=kwarg, 
                                        defaults=[]),
                   body=node)
 
 
-def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG,kwargs=False):
+def closure_node(fArg,
+                 accum=ACCUM_LOAD,
+                 closureAccum=CLOSURE_LAMBDA_ARG,
+                 kwargs=False):
 
     # print('*'*30)
+    # print('closure node')
     # print(ast.dump(accum))
 
     fArgs=fArg[1:]
@@ -1105,11 +1109,11 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG,kwargs=False):
     if is_list(fArgs[0]) and len(fArgs[0]) > 1:
 
         # print('is closure node')
-        # print(f'{fArgs[0]}')
+        # print(f'{fArgs[0]}') 
 
         lambdaArgNodes=[optimize_rec(fArg,accum) for fArg in fArgs[0]]
-        accum=lambdaArgNodes[0]
-
+        # accum=lambdaArgNodes[0] 
+  
         if any([not isinstance(fArg,Name) for fArg in lambdaArgNodes]):
 
             raise Exception(f'Lambda args {lambdaArgs} contains a non-name node')
@@ -1126,9 +1130,11 @@ def closure_node(fArg,accum=CLOSURE_LAMBDA_ARG,kwargs=False):
 
     else:
 
-        accum=CLOSURE_LAMBDA_ARG
+        accum=closureAccum
 
     fArgs.reverse()
+
+    # print(fArgs)
 
     # closureChain=embedded_closure_chain(fArgs,CLOSURE_LAMBDA_ARG)
     closureChain=embedded_closure_chain(fArgs,accum)

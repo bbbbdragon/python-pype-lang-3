@@ -51,6 +51,29 @@ def default_filter_verify(obj):
     return True
 
 
+def num_filter_verify(obj):
+
+    if is_list(obj):
+
+        return False
+
+    if is_dict(obj):
+
+        return False
+
+    if isinstance(obj,int) \
+       or isinstance(obj,float) \
+       or type(obj).__module__ == np.__name__:
+
+        return True
+
+    if not obj:
+
+        return False
+
+    return True
+
+
 def deep_filter(obj,verify=default_filter_verify):
 
     if is_list(obj):
@@ -88,6 +111,7 @@ def deep_filter(obj,verify=default_filter_verify):
             return dct
 
     return null
+
 
 
 def deep_filter_container(obj,verify=default_filter_verify):
@@ -397,6 +421,54 @@ def js_type(obj):
         return dct
 
     return type(obj)
+
+
+def is_atom(ob):
+
+    return not is_dict(ob) and not is_list(ob)
+
+
+def flatten_json_rec(ob):
+
+    if is_dict(ob):
+
+        atoms={k:v for (k,v) in ob.items() if is_atom(v)}
+        dcts=[v for (k,v) in ob.items() if is_dict(v)]
+        dcts=merge_dcts(dcts) if dcts else {}
+        dct={**atoms,**dcts}
+        lists=[flatten_json_rec(v) for (k,v) in ob.items() if is_list(v)]
+        lists=flatten_lists(lists)
+
+        if lists:
+
+            prod=[(el1,el2) for (el1,el2) in product([dct],lists)]
+
+            return prod
+
+        return dct
+
+    if is_list(ob):
+
+        return [flatten_json_rec(el) for el in ob]
+
+    return ob
+
+
+def unroll(tup):
+
+    if isinstance(tup,tuple):
+
+        return flatten_lists([tup[0]] + unroll(tup[1]))
+
+    return [tup]
+
+
+def flatten_dct(ob):
+
+    flattenedTuples=flatten_json_rec(ob)
+    unrolled=[unroll(tup) for tup in flattenedTuples]
+    
+    return [merge_dcts(ls) for ls in unrolled]
 
 
 if __name__=='__main__':

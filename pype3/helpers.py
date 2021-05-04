@@ -1158,3 +1158,18 @@ def dct_delete(dct,k):
     del dct[k]
 
     return dct
+
+
+def mn(ls):
+
+    return min(ls)
+
+
+def mx(ls):
+
+    return max(ls)
+
+
+def select_full_ls(js,keys):
+
+    return {k:js[k] if k in js else False for k in keys}

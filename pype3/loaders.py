@@ -17,7 +17,7 @@ def load_list_file(fileName):
 
     with open(fileName,'r') as f:
 
-        return [ln for ln in f.read().splitlines()]
+        return [ln for ln in f.read().splitlines() if '#' not in ln]
 
 
 def load_json(fileName):
@@ -161,6 +161,28 @@ def load_csv_dct_exception(fileName,delimiter=','):
 
         return dctLS
 
+
+def load_csv_dct_io(stringIO,delimiter=','):
+
+    cs=csv.DictReader(stringIO,delimiter=delimiter)
+
+    return [ordered_dct_to_dct(d) for d in cs]
+
+
 # def load_csv(fileName,delimiter=','):
 
+from io import StringIO
+from csv import DictWriter
+
+def csv_string(dcts,delimiter=','):
+
+    keys=list(dcts[0].keys())
+    buff=StringIO()
+    writer=csv.DictWriter(buff,fieldnames=keys,delimiter=delimiter)
+
+    writer.writeheader()
+    writer.writerows(dcts)
+
+    return buff.getvalue()
     
+

@@ -1153,6 +1153,11 @@ def group_dcts_by_key(ls,key):
     return [list(v) for (k,v) in groupby(ls,lambda k: k[key])] 
 
 
+def unique_by_key(ls):
+
+    return [k for (k,v) in groupby(ls)] 
+
+
 def dct_delete(dct,k):
 
     del dct[k]

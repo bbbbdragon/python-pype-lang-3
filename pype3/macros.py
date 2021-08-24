@@ -38,6 +38,13 @@ def iftp(*fArgs):
             'else':False}
 
 
+def ifnot(condition,fArgs):
+
+    return {~condition:fArgs,
+            'else':condition,
+           } 
+
+
 def is_true(condition):
 
     return {condition:True,
@@ -57,7 +64,6 @@ def dbp(*fArgs):
 def select(*fArgs):
 
     return {fArg:_[fArg] for fArg in fArgs}
-
 
 
 def a(*fArgs):
@@ -277,3 +283,19 @@ def tdm(fArg):
 if __name__=='__main__':
 
     print(embed(_))
+
+
+def const(cls):
+
+    return lm(cls)
+
+
+def ddb(*keys):
+
+    if len(keys) == 1:
+
+        return {keys[0]:_}
+
+    else:
+
+        return {keys[0]:ddb(*keys[1:])}

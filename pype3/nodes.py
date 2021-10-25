@@ -1019,7 +1019,7 @@ def embedded_pype_node(fArgs,accum=ACCUM_LOAD,kwargs=False):
 def do_lambda_node(node):
 
     return Lambda(args=arguments(args=[arg(arg='do_lambda_arg', annotation=None)], 
-                                 vararg=None, 
+                                 vararg=None,
                                  kwonlyargs=[], 
                                  kw_defaults=[], 
                                  kwarg=None, 
@@ -1086,6 +1086,7 @@ def closure_lambda_node(node,lambdaArgs,kwarg=None):
 
     return Lambda(args=arguments(args=lambdaArgs, 
                                        vararg=None, 
+                                       posonlyargs=[],
                                        kwonlyargs=[], 
                                        kw_defaults=[], 
                                        kwarg=kwarg, 
@@ -1116,7 +1117,7 @@ def closure_node(fArg,
   
         if any([not isinstance(fArg,Name) for fArg in lambdaArgNodes]):
 
-            raise Exception(f'Lambda args {lambdaArgs} contains a non-name node')
+            raise Exception(f'Lambda args {[ast.dump(ag) for ag in lambdaArgNodes]} contains a non-name node')
 
         # print(f'{[ast.dump(lambdaArg) for lambdaArg in lambdaArgs]}')
 
@@ -1140,6 +1141,19 @@ def closure_node(fArg,
     closureChain=embedded_closure_chain(fArgs,accum)
 
     return closure_lambda_node(closureChain,lambdaArgs)
+
+
+##########
+# RETURN #
+##########
+
+def pype_return_node(fArgs,accum=ACCUM_LOAD,kwargs=False):
+
+    fArgs=fArgs[1:]
+    optimizedFArgs=[optimize_rec(fArg,accum) for fArg in fArgs]
+    returnNode=[Return(value=optimizedFArgs[0])]
+
+    return returnNode
 
 
 ##########
@@ -1261,6 +1275,7 @@ SHARED_PAIRS=[(is_lambda,lambda_node),
               (is_reduce,reduce_node),
               (is_quote,quote_node),
               (is_closure,closure_node),
+              (is_pype_return,pype_return_node),
               (is_assign,assign_node),
               (is_deep_merge,deep_merge_node),
              ]

@@ -51,6 +51,7 @@ append='LIST_APPEND'
 concat='LIST_CONCAT'
 while_loop='WHILE_LOOP'
 closure='PYPE_CLOSURE'
+rtrn='PYPE_RETURN'
 deep_merge='DEEP_MERGE'
 kwargs='PYPE_KWARGS'
 do='FARG_DO'
@@ -441,7 +442,18 @@ def is_closure(fArg):
         and len(fArg) > 1 \
         and fArg[0] == closure
 
-    
+
+##################
+# IS PYPE RETURN #
+##################
+
+def is_pype_return(fArg):
+
+    return is_list(fArg) \
+        and len(fArg) > 1 \
+        and fArg[0] == rtrn
+
+
 ###########
 # IS FARG #
 ###########
@@ -462,6 +474,7 @@ FARGS=[is_mirror,
        is_list_append,
        is_list_concat,
        is_embedded_pype,
+       is_pype_return,
        is_quote,
        is_kwargs,
        is_do]

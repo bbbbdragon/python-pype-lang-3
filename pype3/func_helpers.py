@@ -202,6 +202,14 @@ def deep_collect(obj,verify):
     return deep_reduce([],obj,append,verify)
 
 
+def deep_collect_fields(obj,field):
+
+    has_field=lambda dct: field in dct
+    dcts=deep_collect(obj,has_field)
+    
+    return [dct[field] for dct in dcts]
+    
+
 def deep_count(obj,verify):
 
     def increment(n):

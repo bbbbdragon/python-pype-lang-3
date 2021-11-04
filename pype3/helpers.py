@@ -422,6 +422,11 @@ def merge_dcts_vals(dctLS):
     return reduce(dct_merge_vals,dctLS)
 
 
+def merge_dcts_ls_vals(dctLS):
+
+    return reduce(dct_merge_ls_vals,dctLS)
+
+
 
 def jn(ls):
 

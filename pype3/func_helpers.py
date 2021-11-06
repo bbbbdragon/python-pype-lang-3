@@ -204,7 +204,7 @@ def deep_collect(obj,verify):
 
 def deep_collect_fields(obj,field):
 
-    has_field=lambda dct: field in dct
+    has_field=lambda dct: isinstance(dct,dict) and field in dct
     dcts=deep_collect(obj,has_field)
     
     return [dct[field] for dct in dcts]

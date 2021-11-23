@@ -318,6 +318,14 @@ def merge_ls_dct(dctLS,key):
 
     return dict(dd)
 
+
+def merge_ls_dct_first(dctLS,key):
+
+    dd=merge_ls_dct(dctLS,key)
+
+    return {k:ls[0] for (k,ls) in dd.items() if ls}
+
+
 def add_to_ls_dct_no_key(listDict,key,deletedKey,val):
 
     del val[deletedKey]
@@ -455,6 +463,11 @@ def flatten_tuple(ls):
     tup=tuple([(el,) if not isinstance(el,tuple) else el for el in ls])
 
     return tuple(itertools.chain.from_iterable(tup))
+
+
+def flatten_lists_values(ls):
+
+    return flatten_lists(dct_values)
 
 
 frist=lambda st,n: st[:n]
@@ -1136,9 +1149,36 @@ def first_dct(ls):
     return ls[0]
 
 
-def prnt(js,message):
+def prnt(js,message=None):
 
-    print(message)
+    if message is None:
+
+        print(js)
+
+    else:
+
+        print(message)
+
+    return js
+
+
+def pprnt(js,message=None,short=True):
+
+    if short:
+
+        p=short_pp
+
+    else:
+        
+        p=pp.pprint
+
+    if message is None:
+
+        p(js)
+
+    else:
+
+        p(message)
 
     return js
 

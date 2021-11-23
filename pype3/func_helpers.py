@@ -8,6 +8,7 @@ from pype3.vals import Quote as q
 from pype3.helpers import *
 import pprint as pp
 from collections import Counter
+import numpy as np
 
 FLOAT_L=1e-100
 
@@ -74,7 +75,25 @@ def num_filter_verify(obj):
     return True
 
 
-def deep_filter(obj,verify=default_filter_verify):
+def non_number_bool(obj):
+
+    if not is_list(obj) \
+       and not is_dict(obj) \
+       and not isinstance(obj,bool) \
+       and (is_int(obj) \
+            or is_float(obj) \
+            or np.isreal(obj)):
+
+        return True
+
+    return bool(obj)
+
+
+def deep_filter(obj,verify=default_filter_verify,deleteZeros=False):
+
+    # test_f=lambda x:non_number_bool(x) if not deleteZeros \
+           # else lambda x:x
+
 
     if is_list(obj):
 
@@ -95,7 +114,7 @@ def deep_filter(obj,verify=default_filter_verify):
     if is_list(obj):
 
         ls=[deep_filter(el,verify) for el in obj]
-        ls=[el for el in ls if el]
+        ls=[el for el in ls if non_number_bool(el)]
 
         if ls:
 
@@ -104,7 +123,7 @@ def deep_filter(obj,verify=default_filter_verify):
     if is_dict(obj):
 
         dct={k:deep_filter(el,verify) for (k,el) in obj.items()}
-        dct={k:el for (k,el) in dct.items() if el}
+        dct={k:el for (k,el) in dct.items() if non_number_bool(el)}
 
         if dct:
 

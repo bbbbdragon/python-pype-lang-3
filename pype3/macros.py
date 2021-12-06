@@ -228,6 +228,11 @@ def cl_has(key):
     return cl(ifta(is_dict,_[key]))
 
 
+def cl_has_not(key):
+
+    return cl(ifta(is_dict,~_[key]))
+
+
 def cl_app(*fArgs):
 
     if not fArgs:

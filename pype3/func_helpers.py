@@ -35,6 +35,24 @@ def deep_map(obj,transform,verify=None):
         return transform(obj)
 
 
+def deep_dct_delete(obj,field):
+ 
+    if is_list(obj):
+
+        ls=[deep_dct_delete(el,field) for el in obj]
+
+        return [el for el in ls if el]
+
+    if is_dict(obj):
+
+        dct={k:deep_dct_delete(v,field) for (k,v) in obj.items() \
+             if k != field}
+
+        return {k:v for (k,v) in dct.items() if v}
+
+    return obj
+
+
 def default_filter_verify(obj):
 
     if is_list(obj):
@@ -227,7 +245,19 @@ def deep_collect_fields(obj,field):
     dcts=deep_collect(obj,has_field)
     
     return [dct[field] for dct in dcts]
-    
+
+
+def deep_collect_multi_fields(obj,*fields):
+
+    fieldSet=set(fields)
+    has_fields=lambda dct: isinstance(dct,dict) \
+        and all([field in dct for field in fieldSet])
+    dcts=deep_collect(obj,has_fields)
+    dctsWithFields=[{k:v for (k,v) in dct.items() if k in fieldSet} \
+                    for dct in dcts]
+
+    return dctsWithFields
+
 
 def deep_count(obj,verify):
 

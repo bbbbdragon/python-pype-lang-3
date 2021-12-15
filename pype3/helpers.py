@@ -833,6 +833,11 @@ def str_join(st,ls):
     return st.join(ls)
 
 
+def str_index(st,begin,end):
+
+    return st[begin:end]
+
+
 def set_union(set1,set2):
 
     return set1|set2
@@ -956,6 +961,11 @@ def dcts_val_multiply(*dcts):
 def get_min(ls):
 
     return min(ls)
+
+
+def get_max(ls):
+
+    return max(ls)
 
 
 def ls_elements(ls,indices):

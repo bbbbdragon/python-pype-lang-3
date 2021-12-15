@@ -259,6 +259,17 @@ def deep_collect_multi_fields(obj,*fields):
     return dctsWithFields
 
 
+def deep_collect_fields_first(obj,field):
+
+    fields=deep_collect_fields(obj,field)
+
+    if fields:
+
+        return fields[0]
+
+    return False
+
+
 def deep_count(obj,verify):
 
     def increment(n):

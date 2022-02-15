@@ -214,6 +214,11 @@ def zero_above(x,thresh=0):
     return x
 
 
+def argsrt(m,topN):
+
+    return np.argsort(m,axis=1)[:,-topN:]
+
+
 def to_above(x,thresh=0,val=1):
 
     x[x > thresh]=val

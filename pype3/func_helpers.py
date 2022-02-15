@@ -249,7 +249,14 @@ def deep_collect_fields(obj,field):
 
 def deep_collect_multi_fields(obj,*fields):
 
-    fieldSet=set(fields)
+    if is_list(fields[0]):
+
+        fieldSet=set(fields[0])
+
+    else:
+
+        fieldSet=set(fields)
+
     has_fields=lambda dct: isinstance(dct,dict) \
         and all([field in dct for field in fieldSet])
     dcts=deep_collect(obj,has_fields)

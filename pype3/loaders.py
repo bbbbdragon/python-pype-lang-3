@@ -20,6 +20,11 @@ def load_list_file(fileName):
         return [ln for ln in f.read().splitlines() if '#' not in ln]
 
 
+def load_json_st(st):
+
+    return json.loads(st)
+
+
 def load_json(fileName):
 
     with open(fileName,'r') as f:
